@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            font-family: "Comic Sans MS";
+            font-size: 24px;
+        }
+        body {
+            background-color: #CCFFCC;
+        }
+        div.posting {
+            background-color: #FFFFFF;
+            border: 2px solid black;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 10px;
+            width: 50%;
+        }
+        div.source {
+            float: left;
+        }
+        div.date {
+            float: right;
+        }
+        div.body {
+            border-top: 1px solid black;
+            clear: both;
+        }
+        img.media {
+            width: 100%;
+        }
+        video.media {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="posting" style="display: flex">
+    <div style="width: 20%">
+        [% IF previous_page %]
+            <a href="[%= c.uri_for('', { page => previous_page, q => c.req.param('q') }) %]">&lt;- Page [%= previous_page %]</a>
+        [% END %]
+    </div>
+    <div style="text-align: center; width: 60%">
+        <form>
+            <input name="q" value="[%= c.req.param('q') %]">
+            <input type="submit" value="Search">
+        </form>
+    </div>
+    <div style="text-align: right; width: 20%">
+        [% IF next_page %]
+            <a href="[%= c.uri_for('', { page => next_page, q => c.req.param('q') }) %]">Page [%= next_page %] -&gt;</a>
+        [% END %]
+    </div>
+</div>
+[% FOREACH posting IN postings %]
+    <div class="posting">
+        <div class="source">[%= posting.source.name %]</div>
+        <div class="date"><a href="?posting=[%= posting.id %]">[%= posting.created_at %]</a></div>
+        <div class="body" lang="[%= posting.lang %]">[%= posting.full_text | html_line_break %]</div>
+        [% FOREACH media IN posting.medias %]
+            <div class="media">
+                [% IF media.media_type == "image" %]
+                    <img class="media" src="tweets_media/[%= media.filename %]"></div>
+                [% ELSIF media.media_type == "video" %]
+                    <video class="media" src="tweets_media/[%= media.filename %]" controls></div>
+                [% END %]
+            </div>
+        [% END %]
+    </div>
+[% END %]
+<div class="posting">
+    <div class="source">[% IF previous_page %]<a href="?page=[%= previous_page %]">&lt;- Page [%= previous_page %]</a>[% END %]</div>
+    <div class="date">[% IF next_page %]<a href="?page=[%= next_page %]">Page [%= next_page %] -&gt;</a>[% END %]</div>
+    <div style="clear: both"></div>
+</div>
+</body>
+</html>

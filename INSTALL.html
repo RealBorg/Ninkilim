@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation Guide for Ninkilim</title>
+</head>
+<body>
+
+    <h1>Installation Guide for Ninkilim</h1>
+
+    <h2>Requirements</h2>
+    <p>To set up Ninkilim, ensure your system has the following Perl modules and software installed:</p>
+    <ul>
+        <li>libcatalyst-perl</li>
+        <li>libcatalyst-devel-perl</li>
+        <li>libdbix-class-schema-loader-perl</li>
+        <li>libcatalyst-model-dbic-schema-perl</li>
+        <li>libcatalyst-plugin-static-simple-perl</li>
+        <li>libcatalyst-plugin-configloader-perl</li>
+        <li>libcatalyst-action-renderview-perl</li>
+        <li>libcatalyst-view-tt-perl</li>
+        <li>libdatetime-format-pg-perl</li>
+        <li>libcatalyst-view-json-perl</li>
+        <li><strong>PostgreSQL</strong> (database server)</li>
+        <li><strong>Starman</strong> (Perl web server)</li>
+    </ul>
+
+    <h2>System and Database Configuration</h2>
+    <ol>
+        <li><strong>Create User</strong>:
+            <pre><code>adduser ninkilim</code></pre>
+        </li>
+        <li><strong>Create Database User</strong>:
+            <pre><code>sudo -u postgres createuser -d ninkilim</code></pre>
+        </li>
+        <li><strong>Create Database</strong>:
+            <pre><code>sudo -u ninkilim createdb ninkilim</code></pre>
+        </li>
+        <li><strong>Import SQL Schema</strong>:
+            <pre><code>sudo -u ninkilim psql -f ninkilim.sql ninkilim</code></pre>
+        </li>
+    </ol>
+
+    <h2>Data Import</h2>
+    <ol>
+        <li><strong>Download Your Twitter Data</strong>:
+            <p>Go to your X settings (X.com), navigate to <strong>More -> Settings and privacy -> Download an archive of your data</strong>.</p>
+        </li>
+        <li><strong>Unzip and Copy Data</strong>:
+            <ul>
+                <li>Unzip <code>twitter-*.zip</code>.</li>
+                <li>Copy necessary JavaScript files to the Ninkilim project:
+                    <pre><code>cp data/account.js data/profile.js data/tweets.js data/note-tweet.js Ninkilim/root</code></pre>
+                </li>
+                <li>Copy media files:
+                    <pre><code>cp -r data/tweets_media Ninkilim/root/static</code></pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>Import Data into Ninkilim</strong>:
+            <pre><code>sudo -u ninkilim Ninkilim/scripts/ninkilim_test.pl /import</code></pre>
+        </li>
+        <li><strong>Start Ninkilim Server</strong>:
+            <pre><code>sudo -u ninkilim Ninkilim/scripts/ninkilim_server.pl -f</code></pre>
+            <p>Access Ninkilim locally via <code>http://localhost:3000/</code>.</p>
+        </li>
+    </ol>
+
+    <h2>Apache Integration (Optional)</h2>
+    <p>If you wish to integrate Ninkilim with Apache for production:</p>
+    <ol>
+        <li><strong>Enable Proxy Modules</strong>:
+            <pre><code>a2enmod proxy_http</code></pre>
+        </li>
+        <li><strong>Configure Proxy in Apache's Configuration File</strong>:
+            <p>Edit your Apache configuration file (like <code>httpd.conf</code> or within <code>sites-available/</code>):</p>
+            <pre><code>&lt;VirtualHost *:80&gt;
+    ProxyPass / http://localhost:3000/
+    ProxyPassReverse / http://localhost:3000/
+&lt;/VirtualHost&gt;</code></pre>
+        </li>
+        <li><strong>Restart Apache</strong>:
+            <pre><code>service apache2 restart</code></pre>
+        </li>
+    </ol>
+    <p>This setup will allow Apache to proxy requests to your Ninkilim application running on Starman. Make sure to replace <code>http</code> with <code>https</code> in your configuration if you're handling secure connections.</p>
+
+    <p><strong>Note</strong>: Ensure all paths, especially those related to Ninkilim's installation directory, are correct relative to your system setup.</p>
+
+</body>
+</html>
