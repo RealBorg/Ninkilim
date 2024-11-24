@@ -42,7 +42,7 @@ __PACKAGE__->config(
     enable_catalyst_header => 1, # Send X-Catalyst header
     encoding => 'UTF-8', # Setup request decoding and response encoding
     'Plugin::Static::Simple' => {
-	include_path => [ __PACKAGE__->config->{root}.'/static' ],
+        include_path => [ __PACKAGE__->config->{root}.'/static' ],
         dirs => [ 'static' ],
     },
 );

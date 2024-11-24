@@ -43,14 +43,14 @@ __PACKAGE__->table("postings");
   data_type: 'bigint'
   is_nullable: 0
 
-=head2 created_at
+=head2 date
 
   data_type: 'timestamp with time zone'
   default_value: current_timestamp
   is_nullable: 0
   original: {default_value => \"now()"}
 
-=head2 full_text
+=head2 text
 
   data_type: 'text'
   is_nullable: 0
@@ -62,22 +62,10 @@ __PACKAGE__->table("postings");
   is_nullable: 0
   size: 3
 
-=head2 reposted
-
-  data_type: 'boolean'
-  default_value: false
-  is_nullable: 0
-
-=head2 in_reply_to
+=head2 parent
 
   data_type: 'bigint'
   is_nullable: 1
-
-=head2 highlight
-
-  data_type: 'boolean'
-  default_value: false
-  is_nullable: 0
 
 =head2 source
 
@@ -90,23 +78,19 @@ __PACKAGE__->table("postings");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "bigint", is_nullable => 0 },
-  "created_at",
+  "date",
   {
     data_type     => "timestamp with time zone",
     default_value => \"current_timestamp",
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
-  "full_text",
+  "text",
   { data_type => "text", is_nullable => 0 },
   "lang",
   { data_type => "char", default_value => "", is_nullable => 0, size => 3 },
-  "reposted",
-  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
-  "in_reply_to",
+  "parent",
   { data_type => "bigint", is_nullable => 1 },
-  "highlight",
-  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "source",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
@@ -136,7 +120,7 @@ Related object: L<Ninkilim::Schema::Result::Media>
 __PACKAGE__->has_many(
   "medias",
   "Ninkilim::Schema::Result::Media",
-  { "foreign.posting_id" => "self.id" },
+  { "foreign.posting" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -156,8 +140,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-18 15:17:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BvYbHsKU+ft2ZrsgcZv2zw
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-24 05:40:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vq9x/oM1J79xqdE3tqxBLQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

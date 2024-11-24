@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<media>
+=head1 TABLE: C<medias>
 
 =cut
 
-__PACKAGE__->table("media");
+__PACKAGE__->table("medias");
 
 =head1 ACCESSORS
 
@@ -43,9 +43,9 @@ __PACKAGE__->table("media");
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
-  sequence: 'media_id_seq'
+  sequence: 'medias_id_seq'
 
-=head2 posting_id
+=head2 posting
 
   data_type: 'bigint'
   is_foreign_key: 1
@@ -56,7 +56,7 @@ __PACKAGE__->table("media");
   data_type: 'text'
   is_nullable: 0
 
-=head2 media_type
+=head2 type
 
   data_type: 'varchar'
   is_nullable: 0
@@ -70,13 +70,13 @@ __PACKAGE__->add_columns(
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
-    sequence          => "media_id_seq",
+    sequence          => "medias_id_seq",
   },
-  "posting_id",
+  "posting",
   { data_type => "bigint", is_foreign_key => 1, is_nullable => 0 },
   "filename",
   { data_type => "text", is_nullable => 0 },
-  "media_type",
+  "type",
   { data_type => "varchar", is_nullable => 0, size => 20 },
 );
 
@@ -105,13 +105,13 @@ Related object: L<Ninkilim::Schema::Result::Posting>
 __PACKAGE__->belongs_to(
   "posting",
   "Ninkilim::Schema::Result::Posting",
-  { id => "posting_id" },
+  { id => "posting" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-18 15:17:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1QONp8p+iSCp8STt7p8Wmg
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-24 05:37:24
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:58boQsfIkfGOmH6G/hqMFQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -45,17 +45,6 @@ __PACKAGE__->table("sources");
   is_nullable: 0
   sequence: 'sources_id_seq'
 
-=head2 enabled
-
-  data_type: 'boolean'
-  default_value: false
-  is_nullable: 0
-
-=head2 uri
-
-  data_type: 'text'
-  is_nullable: 0
-
 =head2 name
 
   data_type: 'text'
@@ -76,10 +65,6 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
     sequence          => "sources_id_seq",
   },
-  "enabled",
-  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
-  "uri",
-  { data_type => "text", is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
   "description",
@@ -116,8 +101,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-18 15:17:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YehMAjW5zHypjCQst0QYWg
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-24 05:37:24
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6mfG+J6PbHgM+CC2/vK7Sg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

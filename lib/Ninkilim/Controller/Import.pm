@@ -28,40 +28,35 @@ sub index :Path :Args(0) {
         $profile = $profile->[0]->{profile};
         my $source = $model->resultset('Source')->create(
             {
-                uri => '',
                 name => $account->{accountDisplayName},
                 description => $profile->{description}->{bio},
             }
         );
-        my $note_tweets = read_file($c->path_to(qw/root note-tweet.js/));
-        $note_tweets =~ s/window.YTD.note_tweet.part0 = //;
-        $note_tweets = $json->decode($note_tweets);
-        my $strp = DateTime::Format::Strptime->new(pattern => '%Y-%m-%dT%H:%M:%S.%3NZ');
-        my $note_tweets_by_date;
-        for my $note_tweet (@{$note_tweets}) {
-            $note_tweet = $note_tweet->{noteTweet};
-            my $date = $strp->parse_datetime($note_tweet->{createdAt})->iso8601;
-            $note_tweets_by_date->{$date} = $note_tweet->{core}->{text};
-        }
-        $strp = DateTime::Format::Strptime->new(pattern => '%a %b %d %H:%M:%S %z %Y');
-        for my $file (qw/tweets.js tweets-part1.js/) {
-            my $tweets = read_file($c->path_to("root", $file));
+        my $strp = DateTime::Format::Strptime->new(pattern => '%a %b %d %H:%M:%S %z %Y');
+        for my $file ($c->path_to('root', 'tweets.js'), glob($c->path_to('root', 'tweets-part*.js'))) {
+            my $tweets = read_file($file);
             $tweets =~ s/^window.YTD.tweets.part\d+ = //;
             $tweets = $json->decode($tweets);
             for my $tweet (@{$tweets}) {
                 $tweet = $tweet->{tweet};
                 my $date = $strp->parse_datetime($tweet->{created_at})->iso8601;
                 my $text = $tweet->{full_text};
-                if (exists($note_tweets_by_date->{$date})) {
-                    $text = $note_tweets_by_date->{$date};
+                for my $entity (@{$tweet->{entities}->{urls}}) {
+                    my $url = $entity->{url};
+                    my $eurl = $entity->{expanded_url};
+                    $text =~ s/$url/$eurl/;
+                }
+                for my $entity (@{$tweet->{extended_entities}->{media}}) {
+                    my $url = $entity->{url};
+                    $text =~ s/$url//;
                 }
                 my $posting = $source->create_related('postings',
                     {
                         id => $tweet->{id},
-                        created_at => $date,
-                        full_text => $text,
+                        date => $date,
+                        text => $text,
                         lang => $tweet->{lang},
-                        in_reply_to => $tweet->{in_reply_to_status_id},
+                        parent => $tweet->{in_reply_to_status_id},
                     }
                 );
                 for my $image (glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}."-*.jpg")), glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}.'-*.png'))) {
@@ -69,7 +64,7 @@ sub index :Path :Args(0) {
                     $posting->create_related('medias',
                         {
                             filename => $image,
-                            media_type => 'image',
+                            type => 'image',
                         }
                     );
                 }
@@ -78,10 +73,20 @@ sub index :Path :Args(0) {
                     $posting->create_related('medias',
                         {
                             filename => $video,
-                            media_type => 'video',
+                            type => 'video',
                         }
                     );
                 }
+            }
+        }
+        if (my $note_tweets = read_file($c->path_to('root', 'note-tweet.js'))) {
+            $note_tweets =~ s/window.YTD.note_tweet.part0 = //;
+            $note_tweets = $json->decode($note_tweets);
+            my $strp = DateTime::Format::Strptime->new(pattern => '%Y-%m-%dT%H:%M:%S.%3NZ');
+            for my $note_tweet (@{$note_tweets}) {
+                $note_tweet = $note_tweet->{noteTweet};
+                my $date = $strp->parse_datetime($note_tweet->{createdAt})->iso8601;
+                $source->search_related('postings', { date => $date })->update({ text => $note_tweet->{core}->{text} });
             }
         }
     });

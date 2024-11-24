@@ -59,14 +59,14 @@
 [% FOREACH posting IN postings %]
     <div class="posting">
         <div class="source">[%= posting.source.name %]</div>
-        <div class="date"><a href="?posting=[%= posting.id %]">[%= posting.created_at %]</a></div>
-        <div class="body" lang="[%= posting.lang %]">[%= posting.full_text | html_line_break %]</div>
+        <div class="date"><a href="?posting=[%= posting.id %]">[%= posting.date %]</a></div>
+        <div class="body" lang="[%= posting.lang %]">[%= posting.text | html_line_break %]</div>
         [% FOREACH media IN posting.medias %]
             <div class="media">
-                [% IF media.media_type == "image" %]
-                    <img class="media" src="tweets_media/[%= media.filename %]"></div>
+                [% IF media.type == "image" %]
+                    <img class="media" src="tweets_media/[%= media.filename %]">
                 [% ELSIF media.media_type == "video" %]
-                    <video class="media" src="tweets_media/[%= media.filename %]" controls></div>
+                    <video class="media" src="tweets_media/[%= media.filename %]" controls>
                 [% END %]
             </div>
         [% END %]

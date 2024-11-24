@@ -12,16 +12,16 @@ sub index :Path :Args(0) {
     my $page = $c->req->param('page') || 1;
     $c->stash(next_page => $page + 1);
     $c->stash(previous_page => $page - 1) if $page > 1;
-    my $postings = $c->model('DB')->resultset('Posting')->search(
+    my $postings_rs = $c->model('DB')->resultset('Posting')->search(
         {
             -and => [
-                full_text => { -not_like => 'RT%' },
-                full_text => { -not_like => '@%' },
-                in_reply_to => undef,
+                text => { -not_like => 'RT%' },
+                text => { -not_like => '@%' },
+                parent => undef,
             ],
         },
         {
-            order_by => {'-desc' => 'created_at'},
+            order_by => {'-desc' => 'date'},
             rows => 10,
             page => $page,
             prefetch => 'medias',
@@ -30,14 +30,46 @@ sub index :Path :Args(0) {
     for my $q (split(/\s+/, $c->req->param('q') || '')) {
         $q =~ s/%/%%/;
         $q = "%$q%";
-        $postings = $postings->search(
+        $postings_rs = $postings_rs->search(
             {
-                full_text => { -ilike => $q },
+                text => { -ilike => $q },
             }
         );
     }
-    $c->stash(postings => [ $postings->all() ]);
-    $c->stash(template => 'index.tt2');
+    my $postings;
+    for my $posting ($postings_rs->all()) {
+        my $medias = $posting->medias;
+        my $source = $posting->source;
+        $posting = {
+            id => $posting->id,
+            date => $posting->date->iso8601,
+            text => $posting->text,
+            lang => $posting->lang,
+            parent => $posting->parent,
+        };
+        $posting->{text} =~ s/(https?:\/\/[^\s]+)/<a href="$1">$1<\/a>/;
+        $posting->{source} = {
+            id => $source->id,
+            name => $source->name,
+            description => $source->description,
+        };
+        for my $media ($medias->all) {
+            push @{$posting->{medias}}, {
+                id => $media->id,
+                filename => $media->filename,
+                type => $media->type,
+            };
+        }
+        push @{$postings}, $posting;
+    }
+    if ($c->req->param('format') eq 'json') {
+        $c->stash(json_data => $postings);
+        $c->forward('View::JSON');
+    } else {
+        $c->stash(postings => $postings);
+        $c->stash(template => 'index.tt2');
+        $c->forward('View::HTML');
+    }
 }
 
 sub default :Path {
