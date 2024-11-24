@@ -38,6 +38,7 @@
     </style>
 </head>
 <body>
+[% BLOCK navigation %]
 <div class="posting" style="display: flex">
     <div style="width: 20%">
         [% IF previous_page %]
@@ -45,7 +46,7 @@
         [% END %]
     </div>
     <div style="text-align: center; width: 60%">
-        <form>
+        <form action="[%= c.uri_for('/search') %]">
             <input name="q" value="[%= c.req.param('q') %]">
             <input type="submit" value="Search">
         </form>
@@ -56,10 +57,12 @@
         [% END %]
     </div>
 </div>
+[% END %]
+[% PROCESS navigation %]
 [% FOREACH posting IN postings %]
     <div class="posting">
         <div class="source">[%= posting.source.name %]</div>
-        <div class="date"><a href="?posting=[%= posting.id %]">[%= posting.date %]</a></div>
+        <div class="date"><a href="[% c.uri_for('/posting', { id => posting.id }) %]">[%= posting.date %]</a></div>
         <div class="body" lang="[%= posting.lang %]">[%= posting.text | html_line_break %]</div>
         [% FOREACH media IN posting.medias %]
             <div class="media">
@@ -72,10 +75,6 @@
         [% END %]
     </div>
 [% END %]
-<div class="posting">
-    <div class="source">[% IF previous_page %]<a href="?page=[%= previous_page %]">&lt;- Page [%= previous_page %]</a>[% END %]</div>
-    <div class="date">[% IF next_page %]<a href="?page=[%= next_page %]">Page [%= next_page %] -&gt;</a>[% END %]</div>
-    <div style="clear: both"></div>
-</div>
+[% PROCESS navigation %]
 </body>
 </html>
