@@ -42,7 +42,7 @@
 <div class="posting" style="display: flex">
     <div style="width: 20%">
         [% IF previous_page %]
-            <a href="[%= c.uri_for('', { page => previous_page, q => c.req.param('q') }) %]">&lt;- Page [%= previous_page %]</a>
+            <a href="[%= c.uri_for(c.action, { page => previous_page, q => c.req.param('q') }) %]">&lt;- Page [%= previous_page %]</a>
         [% END %]
     </div>
     <div style="text-align: center; width: 60%">
@@ -53,7 +53,7 @@
     </div>
     <div style="text-align: right; width: 20%">
         [% IF next_page %]
-            <a href="[%= c.uri_for('', { page => next_page, q => c.req.param('q') }) %]">Page [%= next_page %] -&gt;</a>
+            <a href="[%= c.uri_for(c.action, { page => next_page, q => c.req.param('q') }) %]">Page [%= next_page %] -&gt;</a>
         [% END %]
     </div>
 </div>
