@@ -68,7 +68,7 @@
             <div class="media">
                 [% IF media.type == "image" %]
                     <img class="media" src="tweets_media/[%= media.filename %]">
-                [% ELSIF media.media_type == "video" %]
+                [% ELSIF media.type == "video" %]
                     <video class="media" src="tweets_media/[%= media.filename %]" controls>
                 [% END %]
             </div>
