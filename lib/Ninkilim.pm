@@ -50,6 +50,17 @@ __PACKAGE__->config(
 # Start the application
 __PACKAGE__->setup();
 
+sub uri_for {
+    my ($self, $path, @args) = @_;
+
+    # Call the superclass's _uri_for method to get the full URI
+    my $uri = $self->SUPER::uri_for($path, @args);
+    my $base = $uri->scheme.'://'.$uri->host.':'.$uri->port.'/';
+    warn $base;
+    $uri = $uri->rel($base);
+    warn $uri;
+    return $uri;
+}
 =encoding utf8
 
 =head1 NAME
