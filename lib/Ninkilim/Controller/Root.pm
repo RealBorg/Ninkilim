@@ -84,7 +84,6 @@ sub search :Local {
 sub default :Path {
     my ( $self, $c ) = @_;
 
-    $c->response->body( 'Page not found' );
     $c->response->status(404);
 }
 
@@ -92,7 +91,6 @@ sub forbidden :Private {
     my ( $self, $c ) = @_;
 
     $c->response->status(403);
-    $c->response->body('Forbidden');
 }
 
 sub end :Private {
@@ -133,7 +131,7 @@ sub end :Private {
         $c->stash->{'json_data'} = $c->stash->{'postings'};
         $c->forward('View::JSON');
     } else {
-        $c->stash->{'template'} = 'index.tt2';
+        $c->stash->{'template'} = 'index.tt2' unless $c->stash->{'template'};
         $c->forward('View::HTML');
     }
 }
