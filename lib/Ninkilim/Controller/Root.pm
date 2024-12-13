@@ -133,14 +133,15 @@ sub end :Private {
         my $medias = [ $posting->medias->all ];
         for my $media (@{$medias}) {
             $media = { $media->get_inflated_columns };
+            delete $media->{posting};
         }
         my $author = $posting->author;
         $author = { $author->get_inflated_columns };
         delete $author->{email};
         $posting = {
+            $posting->get_inflated_columns,
             author => $author,
             medias => $medias,
-            $posting->get_inflated_columns,
         };
         $posting->{date} = $posting->{date}->iso8601;
         $posting->{text} =~ s/(https?:\/\/[^\s]+)/<a href="$1">$1<\/a>/g;
