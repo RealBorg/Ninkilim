@@ -26,12 +26,35 @@ sub index :Path :Args(0) {
         $profile =~ s/window.YTD.profile.part0 = //;
         $profile = $json->decode($profile);
         $profile = $profile->[0]->{profile};
-        my $source = $model->resultset('Source')->create(
+        my $user = $model->resultset('User')->find(
             {
-                name => $account->{accountDisplayName},
-                description => $profile->{description}->{bio},
+                id => $account->{accountId},
             }
         );
+        if ($user) {
+            $user->update(
+                {
+                    email => $account->{email},
+                    username => $account->{username},
+                    displayname => $account->{accountDisplayName},
+                    bio => $profile->{description}->{bio},
+                    website => $profile->{description}->{website},
+                    location => $profile->{description}->{location},
+                }
+            );
+        } else {
+            $user = $model->resultset('User')->create(
+                {
+                    id => $account->{accountId},
+                    email => $account->{email},
+                    username => $account->{username},
+                    displayname => $account->{accountDisplayName},
+                    bio => $profile->{description}->{bio},
+                    website => $profile->{description}->{website},
+                    location => $profile->{description}->{location},
+                }
+            );
+        }
         my $strp = DateTime::Format::Strptime->new(pattern => '%a %b %d %H:%M:%S %z %Y');
         for my $file ($c->path_to('root', 'tweets.js'), glob($c->path_to('root', 'tweets-part*.js'))) {
             my $tweets = read_file($file);
@@ -39,43 +62,53 @@ sub index :Path :Args(0) {
             $tweets = $json->decode($tweets);
             for my $tweet (@{$tweets}) {
                 $tweet = $tweet->{tweet};
-                my $date = $strp->parse_datetime($tweet->{created_at})->iso8601;
-                my $text = $tweet->{full_text};
-                for my $entity (@{$tweet->{entities}->{urls}}) {
-                    my $url = $entity->{url};
-                    my $eurl = $entity->{expanded_url};
-                    $text =~ s/$url/$eurl/;
-                }
-                for my $entity (@{$tweet->{extended_entities}->{media}}) {
-                    my $url = $entity->{url};
-                    $text =~ s/$url//;
-                }
-                my $posting = $source->create_related('postings',
+                my $posting = $user->find_related(
+                    'postings',
                     {
                         id => $tweet->{id},
-                        date => $date,
-                        text => $text,
-                        lang => $tweet->{lang},
-                        parent => $tweet->{in_reply_to_status_id},
                     }
                 );
-                for my $image (glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}."-*.jpg")), glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}.'-*.png'))) {
-                    $image =~ s/^.*\///;
-                    $posting->create_related('medias',
+                if ($posting) {
+                } else {
+                    my $date = $strp->parse_datetime($tweet->{created_at})->iso8601;
+                    my $text = $tweet->{full_text};
+                    for my $entity (@{$tweet->{entities}->{urls}}) {
+                        my $url = $entity->{url};
+                        my $eurl = $entity->{expanded_url};
+                        $text =~ s/$url/$eurl/;
+                    }
+                    for my $entity (@{$tweet->{extended_entities}->{media}}) {
+                        my $url = $entity->{url};
+                        $text =~ s/$url//;
+                    }
+                    my $posting = $user->create_related(
+                        'postings',
                         {
-                            filename => $image,
-                            type => 'image',
+                            id => $tweet->{id},
+                            date => $date,
+                            text => $text,
+                            lang => $tweet->{lang},
+                            parent => $tweet->{in_reply_to_status_id},
                         }
                     );
-                }
-                for my $video (glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}.'-*.mp4'))) {
-                    $video =~ s/^.*\///;
-                    $posting->create_related('medias',
-                        {
-                            filename => $video,
-                            type => 'video',
-                        }
-                    );
+                    for my $image (glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}."-*.jpg")), glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}.'-*.png'))) {
+                        $image =~ s/^.*\///;
+                        $posting->create_related('medias',
+                            {
+                                filename => $image,
+                                type => 'image',
+                            }
+                        );
+                    }
+                    for my $video (glob($c->path_to('root', 'static', 'tweets_media', $tweet->{id}.'-*.mp4'))) {
+                        $video =~ s/^.*\///;
+                        $posting->create_related('medias',
+                            {
+                                filename => $video,
+                                type => 'video',
+                            }
+                        );
+                    }
                 }
             }
         }
@@ -86,7 +119,7 @@ sub index :Path :Args(0) {
             for my $note_tweet (@{$note_tweets}) {
                 $note_tweet = $note_tweet->{noteTweet};
                 my $date = $strp->parse_datetime($note_tweet->{createdAt})->iso8601;
-                $source->search_related('postings', { date => $date })->update({ text => $note_tweet->{core}->{text} });
+                $user->search_related('postings', { date => $date })->update({ text => $note_tweet->{core}->{text} });
             }
         }
     });

@@ -67,9 +67,9 @@ __PACKAGE__->table("postings");
   data_type: 'bigint'
   is_nullable: 1
 
-=head2 source
+=head2 author
 
-  data_type: 'integer'
+  data_type: 'bigint'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -91,8 +91,8 @@ __PACKAGE__->add_columns(
   { data_type => "char", default_value => "", is_nullable => 0, size => 3 },
   "parent",
   { data_type => "bigint", is_nullable => 1 },
-  "source",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "author",
+  { data_type => "bigint", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -109,6 +109,21 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
+=head2 author
+
+Type: belongs_to
+
+Related object: L<Ninkilim::Schema::Result::User>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "author",
+  "Ninkilim::Schema::Result::User",
+  { id => "author" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
 =head2 medias
 
 Type: has_many
@@ -124,24 +139,9 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 source
 
-Type: belongs_to
-
-Related object: L<Ninkilim::Schema::Result::Source>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "source",
-  "Ninkilim::Schema::Result::Source",
-  { id => "source" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-24 05:40:55
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vq9x/oM1J79xqdE3tqxBLQ
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-12 12:53:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yWLNh736zNcjXj4rbcgmeg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

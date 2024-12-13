@@ -53,10 +53,19 @@ __PACKAGE__->setup();
 sub uri_for {
     my ($self, $path, @args) = @_;
 
-    # Call the superclass's _uri_for method to get the full URI
     my $uri = $self->SUPER::uri_for($path, @args);
-    my $base = $uri->scheme.'://'.$uri->host.':'.$uri->port.'/';
-    $uri = $uri->rel($base);
+    if (my $scheme = $self->req->header('X-Forwarded-Proto')) {
+        $uri->scheme($scheme);
+    }
+    if (my $port = $self->req->header('X-Forwarded-Port')) {
+        if ($uri->scheme eq 'http' && $port == 80) {
+            $uri->port(undef);
+        } elsif ($uri->scheme eq 'https' && $port == 443) {
+            $uri->port(undef);
+        } else {
+            $uri->port($port);
+        }
+    }
     return $uri;
 }
 =encoding utf8

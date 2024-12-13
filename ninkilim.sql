@@ -1,7 +1,11 @@
-CREATE TABLE sources (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    displayname TEXT NOT NULL,
+    bio TEXT NOT NULL,
+    website TEXT NOT NULL,
+    location TEXT NOT NULL
 );
 CREATE TABLE postings (
     id BIGINT PRIMARY KEY,
@@ -9,13 +13,18 @@ CREATE TABLE postings (
     text TEXT NOT NULL,
     lang CHAR(3) NOT NULL DEFAULT '',
     parent BIGINT,
-    source INTEGER REFERENCES sources(id) NOT NULL
+    author BIGINT REFERENCES users(id) NOT NULL
 );
 CREATE TABLE medias (
     id SERIAL PRIMARY KEY,
     posting BIGINT REFERENCES postings(id) NOT NULL,
     filename TEXT NOT NULL,
     type VARCHAR(20) NOT NULL
+);
+CREATE TABLE login_tokens (
+    user_id BIGINT REFERENCES users(id),
+    token TEXT NOT NULL,
+    created TIMESTAMP NOT NULL
 );
 CREATE INDEX idx_postings_date ON postings(date);
 CREATE INDEX idx_postings_parent ON postings(parent);

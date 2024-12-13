@@ -19,7 +19,7 @@
             padding: 10px;
             width: 1000px;
         }
-        div.source {
+        div.author {
             float: left;
         }
         div.date {
@@ -61,15 +61,15 @@
 [% PROCESS navigation %]
 [% FOREACH posting IN postings %]
     <div class="posting">
-        <div class="source">[%= posting.source.name %]</div>
-        <div class="date"><a href="[% c.uri_for('/posting', { id => posting.id }) %]">[%= posting.date %]</a></div>
+        <div class="author">[%= posting.author.displayname %]</div>
+        <div class="date"><a href="[% c.uri_for('/posting/' _ posting.id ) %]">[%= posting.date %]</a></div>
         <div class="body" lang="[%= posting.lang %]">[%= posting.text | html_line_break %]</div>
         [% FOREACH media IN posting.medias %]
             <div class="media">
                 [% IF media.type == "image" %]
-                    <img class="media" src="tweets_media/[%= media.filename %]">
+                    <img class="media" src="[%= c.uri_for('/tweets_media/' _ media.filename) %]">
                 [% ELSIF media.type == "video" %]
-                    <video class="media" src="tweets_media/[%= media.filename %]" controls>
+                    <video class="media" src="[%= c.uri_for('/tweets_media/' _ media.filename) %]" controls>
                 [% END %]
             </div>
         [% END %]

@@ -42,27 +42,23 @@ sub index :Path :Args(0) {
     $c->stash->{'postings'} = [ $postings->all() ];
 }
 
-sub posting :Local {
-    my ( $self, $c ) = @_;
+sub posting :Local :Args(1) {
+    my ( $self, $c, $id ) = @_;
 
     my $resultset = $c->stash->{'resultset'};
     my $postings;
-    if (my $id = $c->req->param('id')) {
-        my $posting = $resultset->find({
-            id => $id,
-        });
-        if ($posting) {
-            push @{$postings}, $posting;
-        }
-        for (my $i = 0; $i < scalar(@{$postings}); $i++) {
-            push @{$postings}, $resultset->search({
-                parent => $postings->[$i]->id,
-            })->all;
-        }
-        $c->stash->{'postings'} = $postings;
-    } else {
-        $c->stash->{'postings'} = [];
+    my $posting = $resultset->find({
+        id => $id,
+    });
+    if ($posting) {
+        push @{$postings}, $posting;
     }
+    for (my $i = 0; $i < scalar(@{$postings}); $i++) {
+        push @{$postings}, $resultset->search({
+            parent => $postings->[$i]->id,
+        })->all;
+    }
+    $c->stash->{'postings'} = $postings;
 }
 
 sub search :Local {
@@ -79,6 +75,39 @@ sub search :Local {
         );
     }
     $c->stash->{'postings'} = [ $resultset->all() ];
+}
+
+sub sitemap :Local :Args(1) {
+    my ( $self, $c, $page ) = @_;
+
+    $c->stash->{urlset} = {
+        url => [],
+        xmlns => 'http://www.sitemaps.org/schemas/sitemap/0.9',
+    };
+    $c->stash->{xmlopts} = {
+        RootName => undef,
+        XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', 
+        NoAttr => 0, 
+        AttrIndent => 1,
+        #KeepRoot => 1,
+    };
+    $c->req->params->{format} = 'xml';
+    my $resultset = $c->stash->{'resultset'};
+    $resultset = $resultset->search(
+        {},
+        {
+            columns => [ qw/id/ ],
+            rows => 25_000,
+            page => $page,
+            prefetch => undef,
+        }
+    );
+    for my $row ($resultset->all()) {
+        push @{$c->stash->{urlset}->{url}}, { loc => [ $c->uri_for('/posting/'.$row->id)->as_string ] };
+    }
+    delete $c->stash->{next_page};
+    delete $c->stash->{previous_page};
+    delete $c->stash->{postings};
 }
 
 sub default :Path {
@@ -98,38 +127,31 @@ sub end :Private {
 
     delete $c->stash->{'resultset'};
 
-    my $postings;
-    for my $posting (@{$c->stash->{'postings'}}) {
-        my $medias = $posting->medias;
-        my $source = $posting->source;
-        $posting = {
-            id => $posting->id,
-            date => $posting->date->iso8601,
-            text => $posting->text,
-            lang => $posting->lang,
-            parent => $posting->parent,
-        };
-        $posting->{text} =~ s/(https?:\/\/[^\s]+)/<a href="$1">$1<\/a>/g;
-        $posting->{source} = {
-            id => $source->id,
-            name => $source->name,
-            description => $source->description,
-        };
-        for my $media ($medias->all) {
-            push @{$posting->{medias}}, {
-                id => $media->id,
-                filename => $media->filename,
-                type => $media->type,
-            };
+    my $postings = $c->stash->{postings};
+    delete $c->stash->{postings};
+    for my $posting (@{$postings}) {
+        my $medias = [ $posting->medias->all ];
+        for my $media (@{$medias}) {
+            $media = { $media->get_inflated_columns };
         }
-        push @{$postings}, $posting;
+        my $author = $posting->author;
+        $author = { $author->get_inflated_columns };
+        delete $author->{email};
+        $posting = {
+            author => $author,
+            medias => $medias,
+            $posting->get_inflated_columns,
+        };
+        $posting->{date} = $posting->{date}->iso8601;
+        $posting->{text} =~ s/(https?:\/\/[^\s]+)/<a href="$1">$1<\/a>/g;
+        push @{$c->stash->{postings}}, $posting;
     }
-    $c->stash->{'postings'} = $postings;
 
     my $format = $c->req->param('format') || '';
     if ($format eq 'json') {
-        $c->stash->{'json_data'} = $c->stash->{'postings'};
         $c->forward('View::JSON');
+    } elsif ($format eq 'xml') {
+        $c->forward('View::XML');
     } else {
         $c->stash->{'template'} = 'index.tt2' unless $c->stash->{'template'};
         $c->forward('View::HTML');
