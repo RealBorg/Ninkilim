@@ -23,8 +23,13 @@ CREATE TABLE medias (
 );
 CREATE TABLE login_tokens (
     user_id BIGINT REFERENCES users(id),
-    token TEXT NOT NULL,
+    token TEXT NOT NULL PRIMARY KEY,
     created TIMESTAMP NOT NULL
+);
+CREATE TABLE sessions (
+    id CHAR(72) PRIMARY KEY,
+    session_data TEXT,
+    expires INTEGER
 );
 CREATE INDEX idx_postings_date ON postings(date);
 CREATE INDEX idx_postings_parent ON postings(parent);

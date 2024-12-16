@@ -1,29 +1,23 @@
 package Ninkilim::View::JSON;
+use Moose;
+use namespace::autoclean;
+use JSON;
+
+extends 'Catalyst::View';
 
 use strict;
-use base 'Catalyst::View::JSON';
+use warnings;
 
-=head1 NAME
+sub process {
+    my ($self, $c) = @_;
 
-Ninkilim::View::JSON - Catalyst JSON View
+    my $data = $c->stash->{'data'};
+    my $json = JSON->new();
+    $data = $json->encode($data);
+    $c->response->content_type('text/json');
+    $c->res->body($data);
 
-=head1 SYNOPSIS
-
-See L<Ninkilim>
-
-=head1 DESCRIPTION
-
-Catalyst JSON View.
-
-=head1 AUTHOR
-
-Thomas Zehetbauer
-
-=head1 LICENSE
-
-This library is free software, you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=cut
+    return 1;
+}
 
 1;

@@ -65,6 +65,18 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 0 },
 );
 
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("token");
+
 =head1 RELATIONS
 
 =head2 user
@@ -88,8 +100,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-12 12:53:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kUXHYqWz5jNCHneKsB2N6Q
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-15 06:49:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:78zOJ0dumnktCqccb0oReQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

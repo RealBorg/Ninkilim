@@ -1,0 +1,144 @@
+* {
+    font-family: "Comic Sans MS";
+    font-size: 24px;
+}
+a {
+    color: inherit;
+    font-size: inherit;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+body {
+    background-color: #CCFFCC;
+    margin: 0px;
+}
+code {
+    white-space: pre-wrap;
+    display: block;
+}
+div.header {
+    align-items: center;
+    background-color: white;
+    display: flex;
+    height: 64px;
+    justify-content: space-between;
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+}
+div.header_left {
+    height: inherit;
+}
+div.header_middle {
+    height: inherit;
+}
+div.header_right{
+    align-items: center;
+    height: inherit;
+}
+div.header2 {
+    align-items: center;
+    background-color: black;
+    color: white;
+    display: flex;
+    font-size: 16px;
+    height: 16px;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 0px 16px 0px 16px;
+    width: 100%;
+}
+div.header2_left {
+    font-size: inherit;
+}
+div.header2_middle {
+    font-size: inherit;
+}
+div.header2_right {
+    font-size: inherit;
+}
+a.header_logo {
+    height: inherit;
+}
+img.header_logo {
+    height: inherit;
+}
+form.header_search {
+    align-items: center;
+    display: flex;
+}
+input.header_search {
+    border-radius: 16px;
+    width: 50%;
+}
+div.footer {
+    align-items: center;
+    background-color: black;
+    color: white;
+    display: flex;
+    font-size: 16px;
+    height: 32px;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 0px 4px 0px 4px;
+    width: 100%;
+}
+div.footer_left {
+    font-size: inherit;
+}
+div.footer_middle {
+    font-size: inherit;
+}
+div.footer_right {
+    font-size: inherit;
+}
+div.posting {
+    background-color: #FFFFFF;
+    border: 2px solid black;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+    width: 90%;
+}
+div.posting_header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+div.posting_navigation {
+    background-color: #FFFFFF;
+    border: 2px solid black;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+    width: 90%;
+}
+div.author {
+    display: flex;
+}
+div.date {
+    display: flex;
+}
+div.body {
+    border-top: 1px solid black;
+    overflow: hidden;
+}
+div.media {
+    display: flex;
+    flex-wrap: wrap;
+}
+img.media {
+    width: 25%;
+}
+video.media {
+    width: 100%;
+}

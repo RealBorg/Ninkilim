@@ -1,0 +1,15 @@
+﻿[% PROCESS 'header.tt2' %]
+<div class="posting">
+    <div class="author">Login</div>
+    <div class="body">
+        [% IF message %]
+            [%= message %]
+        [% ELSE %]
+            <form method="POST">
+                e-mail <input name="email">
+                <input type="submit">
+            </form>
+        [% END %]
+    </div>
+</div>
+[% PROCESS 'footer.tt2' %]

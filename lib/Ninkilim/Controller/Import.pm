@@ -118,7 +118,7 @@ sub index :Path :Args(0) {
             my $strp = DateTime::Format::Strptime->new(pattern => '%Y-%m-%dT%H:%M:%S.%3NZ');
             for my $note_tweet (@{$note_tweets}) {
                 $note_tweet = $note_tweet->{noteTweet};
-                my $date = $strp->parse_datetime($note_tweet->{createdAt})->iso8601;
+                my $date = $strp->parse_datetime($note_tweet->{updatedAt})->iso8601;
                 $user->search_related('postings', { date => $date })->update({ text => $note_tweet->{core}->{text} });
             }
         }

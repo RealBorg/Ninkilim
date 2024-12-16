@@ -9,27 +9,4 @@ __PACKAGE__->config(
     render_die => 1,
 );
 
-=head1 NAME
-
-Ninkilim::View::HTML - TT View for Ninkilim
-
-=head1 DESCRIPTION
-
-TT View for Ninkilim.
-
-=head1 SEE ALSO
-
-L<Ninkilim>
-
-=head1 AUTHOR
-
-Thomas Zehetbauer
-
-=head1 LICENSE
-
-This library is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=cut
-
 1;
