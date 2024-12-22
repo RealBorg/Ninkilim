@@ -9,16 +9,15 @@ CREATE TABLE users (
 );
 CREATE TABLE postings (
     id BIGINT PRIMARY KEY,
-    date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    date TIMESTAMP NOT NULL DEFAULT NOW(),
     text TEXT NOT NULL,
     lang CHAR(3) NOT NULL DEFAULT '',
     parent BIGINT,
     author BIGINT REFERENCES users(id) NOT NULL
 );
 CREATE TABLE medias (
-    id SERIAL PRIMARY KEY,
     posting BIGINT REFERENCES postings(id) NOT NULL,
-    filename TEXT NOT NULL,
+    filename TEXT PRIMARY KEY,
     type VARCHAR(20) NOT NULL
 );
 CREATE TABLE login_tokens (
@@ -30,6 +29,11 @@ CREATE TABLE sessions (
     id CHAR(72) PRIMARY KEY,
     session_data TEXT,
     expires INTEGER
+);
+CREATE TABLE peers (
+    url TEXT PRIMARY KEY,
+    owner BIGINT REFERENCES users(id),
+    last_id BIGINT
 );
 CREATE INDEX idx_postings_date ON postings(date);
 CREATE INDEX idx_postings_parent ON postings(parent);

@@ -33,6 +33,10 @@ sub index :Path :Args(1) {
             my $markdown = read_file($path);
             $markdown = decode('UTF-8', $markdown);
             $c->stash->{'article'} = Text::MultiMarkdown::markdown($markdown);
+            $path =~ s/.*\/(.*)\/.*/$1/;
+            $path =~ s/_/ /g;
+            $path = join(' ', map(ucfirst($_), split(' ', $path)));
+            $c->stash->{'title'} = $path;
             last;
         }
     }

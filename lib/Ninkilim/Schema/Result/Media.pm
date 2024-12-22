@@ -38,13 +38,6 @@ __PACKAGE__->table("medias");
 
 =head1 ACCESSORS
 
-=head2 id
-
-  data_type: 'integer'
-  is_auto_increment: 1
-  is_nullable: 0
-  sequence: 'medias_id_seq'
-
 =head2 posting
 
   data_type: 'bigint'
@@ -65,13 +58,6 @@ __PACKAGE__->table("medias");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
-  {
-    data_type         => "integer",
-    is_auto_increment => 1,
-    is_nullable       => 0,
-    sequence          => "medias_id_seq",
-  },
   "posting",
   { data_type => "bigint", is_foreign_key => 1, is_nullable => 0 },
   "filename",
@@ -84,13 +70,13 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</id>
+=item * L</filename>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("filename");
 
 =head1 RELATIONS
 
@@ -110,8 +96,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-11-24 05:37:24
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:58boQsfIkfGOmH6G/hqMFQ
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-20 07:54:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rir1GQ2Ow2hjzBr5a5LEHQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

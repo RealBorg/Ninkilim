@@ -121,6 +121,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 peers
+
+Type: has_many
+
+Related object: L<Ninkilim::Schema::Result::Peer>
+
+=cut
+
+__PACKAGE__->has_many(
+  "peers",
+  "Ninkilim::Schema::Result::Peer",
+  { "foreign.owner" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 postings
 
 Type: has_many
@@ -137,8 +152,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-12 12:59:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uRpkHvH1jKYHM7WrTBYt1Q
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-19 08:58:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9JnkXLBD0MVWutObhEAkbA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

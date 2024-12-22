@@ -75,7 +75,7 @@ sub index :Path :Args(0) {
                                 }
                             );
 
-                            my $filename = $c->path_to('root', 'static', 'media', $media->{filename});
+                            my $filename = ''.$c->path_to('root', 'static', 'media', $media->{filename});
                             if (-f $filename) {
                                 my $response = $ua->head($media->{url});
                                 if ($response->header('Content-Length') && $response->header('Content-Length') != -s $filename) {
@@ -83,7 +83,7 @@ sub index :Path :Args(0) {
                                 }
                             }
                             unless (-f $filename) {
-                                my $response = $ua->get($media->{url}, ':content_file' => $filename);
+                                my $response = $ua->get($media->{url}, ':content_file' => "$filename");
                                 unless ($response->is_success) {
                                     unlink $filename;
                                 }

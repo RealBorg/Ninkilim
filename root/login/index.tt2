@@ -1,4 +1,10 @@
-﻿[% PROCESS 'header.tt2' %]
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
 <div class="posting">
     <div class="author">Login</div>
     <div class="body">
@@ -12,4 +18,6 @@
         [% END %]
     </div>
 </div>
-[% PROCESS 'footer.tt2' %]
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>

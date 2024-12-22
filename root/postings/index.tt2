@@ -1,34 +1,24 @@
-﻿[% PROCESS 'header.tt2' %]
-[% FOREACH posting IN data.postings %]
-    <div class="posting">
-        <div class="posting_header">
-            <div class="author">[%= posting.author.displayname %]</div>
-            <div class="date"><a href="[% c.uri_for('/postings', posting.id) %]">[%= posting.date %]</a></div>
-        </div>
-        <div class="body" lang="[%= posting.lang %]">[%= posting.text | html_line_break %]</div>
-        [% IF posting.medias.size %]
-            <div class="media">
-            [% FOREACH media IN posting.medias %]
-                [% IF media.type == "image" %]
-                    <img class="media" src="[%= c.uri_for('/tweets_media/' _ media.filename) %]">
-                [% ELSIF media.type == "video" %]
-                    <video class="media" src="[%= c.uri_for('/tweets_media/' _ media.filename) %]" controls>
-                [% END %]
-            [% END %]
-            </div>
-        [% END %]
-    </div>
-[% END %]
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+<link rel="stylesheet" href="[%= c.uri_for('/autoexpand.css') %]">
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
+[% PROCESS 'postings/list.tt2' %]
 <div class="posting_navigation">
     <div style="width: 20%">
-        [% IF previous_page %]
-            <a href="[%= c.uri_for(c.action, { page => previous_page, q => c.req.param('q') }) %]">&lt;- Page [%= previous_page %]</a>
+        [% IF page.previous %]
+            <a href="[%= c.uri_for(c.action, { page => page.previous }) %]">&lt;- Page [%= page.previous %]</a>
         [% END %]
     </div>
     <div style="text-align: right; width: 20%">
-        [% IF next_page %]
-            <a href="[%= c.uri_for(c.action, { page => next_page, q => c.req.param('q') }) %]">Page [%= next_page %] -&gt;</a>
+        [% IF page.next %]
+            <a href="[%= c.uri_for(c.action, { page => page.next }) %]">Page [%= page.next %] -&gt;</a>
         [% END %]
     </div>
 </div>
-[% PROCESS 'footer.tt2' %]
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>

@@ -23,6 +23,7 @@ __PACKAGE__->config(
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header => 1, # Send X-Catalyst header
     encoding => 'UTF-8', # Setup request decoding and response encoding
+    using_frontend_proxy => 1,
     'Plugin::Static::Simple' => {
         ignore_extensions => [],
         include_path => [ __PACKAGE__->config->{root}.'/static' ],
@@ -36,27 +37,10 @@ __PACKAGE__->config(
         TEMPLATE_EXTENSION => '.tt2',
     },
 );
+$ENV{TZ} = 'UTC';
+$ENV{LC_ALL} = 'C';
 
 __PACKAGE__->setup();
-
-sub uri_for {
-    my ($self, $path, @args) = @_;
-
-    my $uri = $self->SUPER::uri_for($path, @args);
-    if (my $scheme = $self->req->header('X-Forwarded-Proto')) {
-        $uri->scheme($scheme);
-    }
-    if (my $port = $self->req->header('X-Forwarded-Port')) {
-        if ($uri->scheme eq 'http' && $port == 80) {
-            $uri->port(undef);
-        } elsif ($uri->scheme eq 'https' && $port == 443) {
-            $uri->port(undef);
-        } else {
-            $uri->port($port);
-        }
-    }
-    return $uri;
-}
 
 sub user {
     my ($self) = @_;

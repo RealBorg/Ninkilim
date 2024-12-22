@@ -1,6 +1,9 @@
 package Ninkilim::Controller::Postings;
 use Moose;
 use namespace::autoclean;
+use DateTime;
+use Text::MultiMarkdown qw/markdown/;
+use Data::Dumper;
 
 BEGIN { extends 'Catalyst::Controller'; }
 
@@ -10,21 +13,41 @@ use warnings;
 sub begin :Private {
     my ( $self, $c ) = @_;
 
-    my $page = $c->req->param('page') || 1;
-    $c->stash->{'next_page'} = $page + 1;
-    $c->stash->{'previous_page'} = $page - 1 if $page > 1;
+    $c->controller('Root')->begin($c);
+
+    my $page = abs(int($c->req->param('page') || 1));
+    $c->stash->{'page'}->{'current'} = $page;
+    $c->stash->{'page'}->{'next'} = $page + 1;
+    $c->stash->{'page'}->{'previous'} = $page - 1 if $page > 1;
+
+    my $rows = abs(int($c->req->param('rows') || '10'));
+    $rows = 10 if $rows > 100;
+
+    my $order_by = { -desc => 'date' };
+    if (($c->req->param('sort') || 'desc') eq 'asc') {
+        $order_by = 'date',
+    }
+
+    my $min_id = abs(int($c->req->param('min_id') || 0));
 
     my $resultset = $c->model('DB')->resultset('Posting')->search(
         {
-            text => { -not_like => 'RT%' },
+            'id' => { '>' => $min_id },
         },
         {
-            order_by => {'-desc' => 'date'},
-            rows => 10,
+            order_by => $order_by,
+            rows => $rows,
             page => $page,
-            prefetch => 'medias',
         }
     );
+    unless ($c->req->param('include_rt')) {
+        $resultset = $resultset->search(
+            {
+                text => { -not_like => 'RT%' },
+            },
+            {}
+        );
+    }
     $c->stash->{'resultset'} = $resultset;
 }
 
@@ -32,21 +55,20 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
     my $resultset = $c->stash->{'resultset'};
-    my $postings = [];
-    $postings = $resultset->search(
-        {
-            -and => [
-                text => { -not_like => '@%' },
-                parent => undef,
-            ],
-        }
-    );
-    $postings = [ $postings->all() ];
+    unless ($c->req->param('include_replies')) {
+        $resultset = $resultset->search(
+            {
+                -and => [
+                    text => { -not_like => '@%' },
+                    parent => undef,
+                ],
+            }
+        );
+    }
+    my $postings = [ $resultset->all() ];
+    $c->stash->{'title'} = $c->uri_for('/')->host . '/' . $c->stash->{'page'}->{'current'};
     $c->stash->{'data'}->{'postings'} = $postings;
-}
-
-sub create :Local :Args(0) {
-    my ( $self, $c, $id ) = @_;
+    $self->finish($c);
 }
 
 sub posting :Path :Args(1) {
@@ -59,6 +81,11 @@ sub posting :Path :Args(1) {
     });
     if ($posting) {
         push @{$postings}, $posting;
+        my $title = $posting->text;
+        $title = [ split(/ /, $title) ];
+        $title = join(' ', @{$title}[0..8]);
+        $title = $posting->author->displayname . ': ' . $title . '...';
+        $c->stash->{'title'} = $title;
     }
     for (my $i = 0; $i < scalar(@{$postings}); $i++) {
         push @{$postings}, $resultset->search({
@@ -66,7 +93,7 @@ sub posting :Path :Args(1) {
         })->all;
     }
     $c->stash->{'data'}->{'postings'} = $postings;
-    $c->stash->{template} = 'postings/index.tt2';
+    $self->finish($c);
 }
 
 sub search :Local :Args(0) {
@@ -82,8 +109,9 @@ sub search :Local :Args(0) {
             }
         );
     }
+    $c->stash->{'title'} = 'Search: ' . $c->req->param('q');
     $c->stash->{'data'}->{'postings'} = [ $resultset->all() ];
-    $c->stash->{'template'} = 'postings/index.tt2';
+    $self->finish($c);
 }
 
 sub sitemap :Local :Args(1) {
@@ -113,41 +141,37 @@ sub sitemap :Local :Args(1) {
         AttrIndent => 1,
         #KeepRoot => 1,
     };
-    $c->req->params->{'format'} = 'xml';
+    $c->stash->{'format'} = 'xml';
 }
 
-sub end :Private {
+sub finish :Private {
     my ( $self, $c ) = @_;
 
     my $postings = $c->stash->{'data'}->{'postings'};
-    delete $c->stash->{'data'}->{'postings'};
     for my $posting (@{$postings}) {
         my $medias = [ $posting->medias->all ];
         for my $media (@{$medias}) {
-            $media = { $media->get_inflated_columns };
+            $media = { 
+                $media->get_columns,
+            };
             delete $media->{posting};
+            $media->{url} = ''.$c->uri_for('/media', $media->{filename});
         }
         my $author = $posting->author;
-        $author = { $author->get_inflated_columns };
+        $author = { $author->get_columns };
         delete $author->{email};
         $posting = {
-            $posting->get_inflated_columns,
+            $posting->get_columns,
+            id => ''.$posting->id,
             author => $author,
             medias => $medias,
         };
         $posting->{parent} ||= 0;
-        $posting->{date} = $posting->{date}->iso8601;
-        $posting->{text} =~ s/(https?:\/\/[^\s]+)/<a href="$1">$1<\/a>/g;
-        push @{$c->stash->{data}->{postings}}, $posting;
-    }
-
-    my $format = $c->req->param('format') || '';
-    if ($format eq 'json') {
-        $c->forward('View::JSON');
-    } elsif ($format eq 'xml') {
-        $c->forward('View::XML');
-    } else {
-        $c->forward('View::HTML');
+        $posting->{'date'} =~ s/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})([+-]\d{2})/$1T$2/;
+        if ($c->stash->{'format'} eq 'html') {
+            $posting->{'text'} =~ s/(https?:\/\/[^\s]+)/[$1]($1)/g;
+            $posting->{'text'} = markdown($posting->{text});
+        }
     }
 }
 
