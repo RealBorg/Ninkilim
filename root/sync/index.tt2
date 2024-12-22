@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+<style>
+    .form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px; /* space between forms */
+    }
+    
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px; /* space between form elements */
+        border: 1px solid #ccc;
+        padding: 10px;
+        min-width: 200px; /* adjust based on your needs */
+    }
+
+    .form-line {
+        display: flex;
+        gap: 5px;
+    }
+
+    .form-line label {
+        width: 80px; /* fixed width for alignment */
+    }
+
+    .form-line input[type="text"] {
+        flex-grow: 1;
+    }
+
+    .form-buttons {
+        display: flex;
+        gap: 10px;
+    }
+</style>
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
+<div class="form-container">
+[% FOREACH peer IN data.peers %]
+    <form method="POST">
+        <input type="hidden" name="url" value="[%= peer.url %]">
+        <div class="form-line">
+            <label for="url1">URL:</label>
+            <input type="text" id="url1" name="newurl" value="[%= peer.url %]">
+        </div>
+        <div class="form-line">
+            <label for="owner1">Owner:</label>
+            <input type="text" id="owner1" name="owner" value="[%= peer.owner %]" readonly>
+        </div>
+        <div class="form-line">
+            <label for="last_id1">Last ID:</label>
+            <input type="text" id="last_id1" name="last_id" value="[%= peer.last_id %]">
+        </div>
+        <div class="form-buttons">
+            [% IF peer.owner == c.user.id %]
+            <input type="submit" name="update" value="Update">
+            <input type="submit" name="delete" value="Delete">
+            [% END %]
+        </div>
+    </form>
+[% END %]
+[% IF c.user %]
+    <form method="POST">
+        <div class="form-line">
+            <label for="url1">URL:</label>
+            <input type="text" id="url1" name="url">
+        </div>
+        <div class="form-line">
+            <label for="owner1">Owner:</label>
+            <input type="text" id="owner1" name="owner" value="[%= c.user.id %]" readonly>
+        </div>
+        <div class="form-line">
+            <label for="last_id1">Last ID:</label>
+            <input type="text" id="last_id1" name="last_id" value="0">
+        </div>
+        <div class="form-buttons">
+            <input type="submit" name="create" value="Create">
+        </div>
+    </form>
+[% END %]
+</div>
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>

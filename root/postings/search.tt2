@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+<link rel="stylesheet" href="[%= c.uri_for('/autoexpand.css') %]">
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
+[% PROCESS 'postings/list.tt2' %]
+<div class="posting_navigation">
+    <div style="width: 20%">
+        [% IF page.previous %]
+            <a href="[%= c.uri_for(c.action, { page => page.previous, q => c.req.param('q') }) %]">&lt;- Page [%= page.previous %]</a>
+        [% END %]
+    </div>
+    <div style="text-align: right; width: 20%">
+        [% IF page.next %]
+            <a href="[%= c.uri_for(c.action, { page => page.next, q => c.req.param('q') }) %]">Page [%= page.next %] -&gt;</a>
+        [% END %]
+    </div>
+</div>
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>

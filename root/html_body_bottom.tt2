@@ -1,0 +1,13 @@
+<div class="footer">
+    <div class="footer_left">
+    </div>
+    <div class="footer_center">
+    </div>
+    <div class="footer_right">
+        Powered by
+        <a href="https://www.perl.org/">PERL</a>,
+        <a href="http://catalyst.perl.org/">Catalyst</a>,
+        <a href="https://www.postgresql.org/">PostgreSQL</a>, and
+        <a href="https://ninkilim.com/articles/ninkilim">Ninkilim</a>
+    </div>
+</div>

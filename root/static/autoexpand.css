@@ -1,0 +1,19 @@
+div.body {
+    max-height: 4em;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+div.body:hover {
+    max-height: none;
+    transition: max-height 0.3s ease-in;
+}
+div.media {
+    max-height: 4em;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    width: 25%;
+}
+div.media:hover {
+    max-height: none;
+    transition: max-height 0.3s ease-in;
+}

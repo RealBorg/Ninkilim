@@ -1,0 +1,11 @@
+    <title>[%= title | html %]</title>
+    <link rel="stylesheet" href="[%= c.uri_for('/default.css') %]">
+    <link rel="manifest" href="[%= c.uri_for('/manifest.json') %]">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="16x16" href="[%= c.uri_for('/favicon/16.png') %]">
+    <link rel="icon" type="image/png" sizes="32x32" href="[%= c.uri_for('/favicon/32.png') %]">
+    <link rel="icon" type="image/png" sizes="64x64" href="[%= c.uri_for('/favicon/64.png') %]">
+    <link rel="icon" type="image/png" sizes="128x128" href="[%= c.uri_for('/favicon/128.png') %]">
+    <link rel="icon" type="image/png" sizes="256x256" href="[%= c.uri_for('/favicon/256.png') %]">
+    <link rel="icon" type="image/png" sizes="512x512" href="[%= c.uri_for('/favicon/512.png') %]">
+    <meta charset="utf-8">
