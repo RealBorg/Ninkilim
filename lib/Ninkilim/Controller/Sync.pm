@@ -4,17 +4,10 @@ use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller'; }
 
-sub begin :Private {
-    my ( $self, $c ) = @_;
-
-    $c->stash->{'format'} = 'html';
-    $c->stash->{'resultset'} = $c->model('DB')->resultset('Peer');
-}
-
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
-    my $rs = $c->stash->{'resultset'};
+    my $rs = $c->model('DB')->resultset('Peer');
     if ($c->user && $c->req->method eq 'POST') {
         if ($c->req->param('delete')) {
             $rs->search(

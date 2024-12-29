@@ -8,6 +8,7 @@ use Data::Dumper;
 
 use constant {
     CHARSET => [ '0'..'9', 'a'..'z', 'A'..'Z' ],
+    TWITTER_EPOCH => 1288834974657, # milliseconds since 2010-11-04T01:42:54
 };
 
 BEGIN { extends 'Catalyst::Controller'; }
@@ -29,7 +30,7 @@ sub index :Path :Args(0) {
 
     if ($c->req->method eq 'POST') {
         if ($c->req->param('post')) {
-            my $id = Time::HiRes::time * 1000;
+            my $id = Time::HiRes::time * 1000 - TWITTER_EPOCH();
             $id = $id << 22;
             $id += $draft_id;
             $posting->{'id'} = $id;

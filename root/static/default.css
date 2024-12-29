@@ -5,7 +5,7 @@
 a {
     color: inherit;
     font-size: inherit;
-    text-decoration: none;
+    text-decoration: underline;
 }
 a:hover {
     text-decoration: underline;
@@ -136,11 +136,18 @@ div.body {
     border-top: 1px solid black;
 }
 div.media {
-    display: flex;
+    /* display: flex; */
     flex-wrap: wrap;
+    width: 100%;
 }
 img.media {
-    width: 25%;
+    transition: max-height 1s, width 1s;
+    max-height: 4em;
+    max-width: 25%;
+}
+img.media:hover {
+    max-height: none;
+    width: 100%;
 }
 video.media {
     width: 100%;

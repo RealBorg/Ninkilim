@@ -6,7 +6,11 @@
 <body>
 [% PROCESS 'html_body_top.tt2' %]
 <div class="posting">
-    <div class="body" lang="[%= lang %]">[%= article %]</div>
+    <div class="body">
+        [% FOREACH title IN articles.keys.sort %]
+        <a href="[%= c.uri_for('/articles', title) %]">[%= article_titles.item(title) %]</a> ( [% FOREACH lang IN articles.item(title).keys.sort %]<a href="[%= c.uri_for('/articles', title, lang) %]">[%= lang %]</a> [% END %])<br>
+        [% END %]
+    </div>
 </div>
 [% PROCESS 'html_body_bottom.tt2' %]
 </body>

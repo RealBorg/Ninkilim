@@ -1,19 +1,17 @@
 div.body {
     max-height: 4em;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: max-height 1s;
 }
 div.body:hover {
     max-height: none;
-    transition: max-height 0.3s ease-in;
+    transition: max-height 1s;
 }
-div.media {
+img.media {
     max-height: 4em;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    width: 25%;
+    transition: width 1s, max-height 1s;
 }
-div.media:hover {
+img.media:hover {
     max-height: none;
-    transition: max-height 0.3s ease-in;
+    width: 100%;
 }

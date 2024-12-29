@@ -1,6 +1,7 @@
 package Ninkilim;
 use Moose;
 use namespace::autoclean;
+use POSIX;
 
 use Catalyst::Runtime 5.80;
 
@@ -10,7 +11,6 @@ use Catalyst qw/
     Session
     Session::State::Cookie
     Session::Store::DBIC
-    Static::Simple
 /;
 
 extends 'Catalyst';
@@ -24,11 +24,6 @@ __PACKAGE__->config(
     enable_catalyst_header => 1, # Send X-Catalyst header
     encoding => 'UTF-8', # Setup request decoding and response encoding
     using_frontend_proxy => 1,
-    'Plugin::Static::Simple' => {
-        ignore_extensions => [],
-        include_path => [ __PACKAGE__->config->{root}.'/static' ],
-        dirs => [ 'static' ],
-    },
     'Plugin::Session' => {
         dbic_class => 'DB::Session',
         expires => 60*60,
@@ -38,7 +33,9 @@ __PACKAGE__->config(
     },
 );
 $ENV{TZ} = 'UTC';
-$ENV{LC_ALL} = 'C';
+POSIX::tzset();
+$ENV{LC_ALL} = 'POSIX';
+POSIX::setlocale(POSIX::LC_ALL, $ENV{LC_ALL});
 
 __PACKAGE__->setup();
 

@@ -1,8 +1,6 @@
 package Ninkilim::Controller::Root;
 use Moose;
 use namespace::autoclean;
-use File::Slurp;
-use Cwd;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -16,6 +14,8 @@ sub begin :Private {
         $c->stash->{'format'} = 'json';
     } elsif ($format eq 'xml') {
         $c->stash->{'format'} = 'xml';
+    } elsif ($format eq 'yaml') {
+        $c->stash->{'format'} = 'yaml';
     } else {
         $c->stash->{'format'} = 'html';
     }
@@ -33,8 +33,8 @@ sub index :Path :Args(0) {
 sub default :Path {
     my ( $self, $c ) = @_;
 
-    $c->stash->{'format'} = 'html';
-    $c->res->status(404);
+    my $static = $c->controller('Root::Static');
+    $static->index($c);
 }
 
 sub forbidden :Private {
@@ -62,6 +62,8 @@ sub end :Private {
             $c->forward('View::JSON');
         } elsif ($format eq 'xml') {
             $c->forward('View::XML');
+        } elsif ($format eq 'yaml') {
+            $c->forward('View::YAML');
         } else {
             $c->forward('View::HTML');
         }
