@@ -7,7 +7,7 @@
 <body>
 [% PROCESS 'html_body_top.tt2' %]
 <div class="posting" onClick="window.location.href = '[%= c.uri_for('/') %]'">
-    <div class="body">NOT FOUND</div>
+    <div class="body">[%= data %]</div>
 </div>
 [% PROCESS 'html_body_bottom.tt2' %]
 </body>

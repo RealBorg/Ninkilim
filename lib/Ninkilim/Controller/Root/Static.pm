@@ -18,10 +18,12 @@ sub find_files {
 
     my $dir_stat = [ stat($dir) ];
     if ($static->{dirs}->{$dir}->{mtime} && $static->{dirs}->{$dir}->{mtime} == $dir_stat->[9]) {
-        for my $path (@{$static->{dirs}->{$dir}->{dirs}}) {
+        for my $path (keys(%{$static->{dirs}->{$dir}->{dirs}})) {
             $self->find_files($path);
         }
     } else {
+        delete $static->{dirs}->{$dir}->{files};
+        delete $static->{dirs}->{$dir}->{dirs};
         for my $path (File::Slurp::read_dir($dir, err_mode => 'quiet', prefix => 1)) {
             my $stat = [ stat($path) ];
             if (-f $path) {
@@ -29,6 +31,7 @@ sub find_files {
                 $static->{dirs}->{$dir}->{files}->{$path}->{size} = $stat->[7];
             } elsif (-d $path) {
                 $self->find_files($path);
+                $static->{dirs}->{$dir}->{dirs}->{$path}->{mtime} = $stat->[9];
             }
         }
         $static->{dirs}->{$dir}->{mtime} = $dir_stat->[9];
@@ -45,35 +48,35 @@ sub find_files {
 sub index :Path :Args {
     my ( $self, $c, @args ) = @_;
 
-
     my $rootstatic = $c->path_to(qw/root static/);
-    my $files = $self->find_files($c->path_to(qw/root static/));
+    my $files = $self->find_files($rootstatic);
 
     my $path = $rootstatic.'/'.$c->req->path();
     if (my $file = $files->{$path}) {
-        my $fh = IO::File->new($path, 'r');
-        if ($fh) {
+        my $ifmodified = $c->req->header('If-Modified');
+        $ifmodified = HTTP::Date::str2time($ifmodified) if $ifmodified;
+        if ($ifmodified && $ifmodified == $file->{mtime}) {
+            $c->detach('/notmodified');
+        } else {
             if (my $mime_type = $mime_types->mimeTypeOf($path)) {
                 $c->res->header('Content-Type' => $mime_type->type);
             }
             $c->res->header('Content-Length' => $file->{size});
             $c->res->header('Last-Modified' => HTTP::Date::time2str($file->{mtime}));
-            binmode $fh;
-            $c->res->body($fh);
-        } else {
-            $c->stash->{'format'} = 'html';
-            $c->stash->{status} = 'INTERNAL SERVER ERROR';
-            $c->res->status(500);
+            if ($c->req->method eq 'HEAD') {
+                $c->stash->{'format'} = 'none';
+            } elsif ($c->req->method eq 'GET') {
+                $c->stash->{'format'} = 'none';
+                my $fh = IO::File->new($path, 'r');
+                binmode $fh;
+                $c->res->body($fh);
+            } else {
+                $c->detach('/methodnotfound');
+            }
         }
     } else {
-        $c->stash->{'format'} = 'html';
-        $c->res->status(404);
+        $c->detach('/notfound');
     }
-}
-
-sub end :Private {
-    my ( $self, $c ) = @_;
-
 }
 
 __PACKAGE__->meta->make_immutable;

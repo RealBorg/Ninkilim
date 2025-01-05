@@ -1,0 +1,13 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
+<div class="posting">
+    [%= log | html_line_break %]<br>
+</div>
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>

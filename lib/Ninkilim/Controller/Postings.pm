@@ -13,8 +13,6 @@ use warnings;
 sub begin :Private {
     my ( $self, $c ) = @_;
 
-    $c->controller('Root')->begin($c);
-
     my $page = abs(int($c->req->param('page') || 1));
     $c->stash->{'page'}->{'current'} = $page;
     $c->stash->{'page'}->{'next'} = $page + 1;
@@ -168,11 +166,13 @@ sub finish :Private {
         };
         $posting->{parent} ||= 0;
         $posting->{'date'} =~ s/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})([+-]\d{2})/$1T$2/;
-        if ($c->stash->{'format'} eq 'html') {
-            $posting->{'text'} =~ s/(https?:\/\/[^\s]+)/[$1]($1)/g;
-            $posting->{'text'} = markdown($posting->{text});
-        }
     }
+    $c->stash->{'markdown'} = sub {
+        my $text = shift;
+        $text =~ s/(https?:\/\/[^\s]+)/[$1]($1)/g;
+        $text = Text::MultiMarkdown::markdown($text);
+        return $text;
+    };
 }
 
 __PACKAGE__->meta->make_immutable;
