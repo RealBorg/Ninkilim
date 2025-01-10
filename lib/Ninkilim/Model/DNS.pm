@@ -7,6 +7,7 @@ extends 'Catalyst::Model';
 use File::Slurp;
 use Net::DNS;
 use POSIX;
+use Sys::Hostname qw//;
 
 use strict;
 use warnings;
@@ -28,6 +29,11 @@ sub load_records {
             $value = '' unless defined($value);
             push @{$new_records->{$name}->{$class}->{$type}}, $value;
         }
+        push @{$new_records->{'authors.bind'}->{'CH'}->{'TXT'}}, '"Farid Zehetbauer"';
+        push @{$new_records->{'hostname.bind'}->{'CH'}->{'TXT'}}, Sys::Hostname::hostname;
+        push @{$new_records->{'version.bind'}->{'CH'}->{'TXT'}}, 'Ninkilim::DNS';
+        push @{$new_records->{'id.server'}->{'CH'}->{'TXT'}}, Sys::Hostname::hostname;
+
         $records = $new_records;
         $mtime = $stat->[9];
     }
