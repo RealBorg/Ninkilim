@@ -22,6 +22,7 @@
         libdbd-pg-perl \
         libdbix-class-schema-loader-perl \
         liblingua-identify-perl \
+        libnet-ntp-perl \
         libtext-multimarkdown-perl \
         postgresql \
         starman

@@ -4,38 +4,42 @@ use namespace::autoclean;
 
 extends 'Catalyst::Model';
 
-use Data::Dumper;
+use File::Slurp;
 use Net::DNS;
-use Ninkilim;
 use POSIX;
 
 use strict;
 use warnings;
 
-sub load_records {
-    my ($self) = @_;
+my $mtime = 0;
+my $records;
 
-    my $file = Ninkilim->path_to(qw/root dns.txt/);
+sub load_records {
+    my ($self, $file) = @_;
+
     my $stat = [ stat($file) ];
-    unless (($self->{mtime} || 0) == $stat->[9]) {
-        $file = File::Slurp::read_file($file, array_ref => 1, chomp => 1, err_mode => 'croak');
-        for my $line (@{$file}) {
+    unless ($mtime == $stat->[9]) {
+        my $data = File::Slurp::read_file($file, array_ref => 1, chomp => 1, err_mode => 'croak');
+        my $new_records;
+        for my $line (@{$data}) {
             next if $line =~ /^$/;
             next if $line =~ /^#/;
-            my ($name, $class, $type, $data) = split(/\s+/, $line, 4);
-            $data = '' unless defined($data);
-            push @{$self->{records}->{$name}->{$class}->{$type}}, $data;
+            my ($name, $class, $type, $value) = split(/\s+/, $line, 4);
+            $value = '' unless defined($value);
+            push @{$new_records->{$name}->{$class}->{$type}}, $value;
         }
-        $self->{mtime} = $stat->[9];
+        $records = $new_records;
+        $mtime = $stat->[9];
     }
+    return $records;
 }
 
 sub reply {
-    my ($self, $from_addr, $query) = @_;
+    my ($self, $file, $query) = @_;
 
     return undef unless $query;
 
-    $self->load_records;
+    $self->load_records($file);
 
     unless (ref($query) eq 'Net::DNS::Packet') {
         $query = Net::DNS::Packet->new(\$query);
@@ -47,16 +51,12 @@ sub reply {
 
     my $reply;
     for my $question ($query->question) {
-        Ninkilim->log->debug(
-            sprintf(
-                "%s %s %s %s\n", 
-                __PACKAGE__, 
-                POSIX::strftime('%Y-%m-%dT%H:%M:%S', gmtime(time)),
-                $from_addr,
-                $question->string,
-            )
+        STDOUT->printf(
+            "%s %s\n",
+            __PACKAGE__, 
+            $question->string,
         );
-        if ($self->{records}->{lc($question->qname)}) {
+        if ($records->{lc($question->qname)}) {
             unless ($reply) {
                 $reply = $query->reply($query);
                 $reply->header->rcode('NOERROR');
@@ -80,14 +80,10 @@ sub reply {
                 }
             }
             for (@answer, @additional) {
-                Ninkilim->log->debug(
-                    sprintf(
-                        "%s %s %s %s\n", 
-                        __PACKAGE__, 
-                        POSIX::strftime('%Y-%m-%dT%H:%M:%S', gmtime(time)),
-                        $from_addr,
-                        $_->string,
-                    )
+                STDOUT->printf(
+                    "%s %s\n",
+                    __PACKAGE__, 
+                    $_->string,
                 );
             }
             $reply->push(answer => @answer);
@@ -103,17 +99,17 @@ sub get_records {
     my @result;
 
     if ($qtype eq 'AXFR') {
-        for my $key (keys(%{$self->{records}})) {
+        for my $key (keys(%{$records})) {
             if ($key =~ /$qname$/i) {
                 push @result, $self->get_records($key, $qclass, 'ANY');
             }
         }
     } elsif ($qtype eq 'ANY') {
-        for my $type (keys(%{$self->{records}->{lc($qname)}->{$qclass}})) {
+        for my $type (keys(%{$records->{lc($qname)}->{$qclass}})) {
             push @result, $self->get_records($qname, $qclass, $type);
         }
     } else {
-        for my $data (List::Util::shuffle(@{$self->{records}->{lc($qname)}->{$qclass}->{$qtype}})) {
+        for my $data (List::Util::shuffle(@{$records->{lc($qname)}->{$qclass}->{$qtype}})) {
             my $rr = Net::DNS::RR->new("$qname $qclass $qtype $data");
             if ($qtype eq 'MX') {
                 $rr->preference(10) unless $rr->preference;
@@ -123,7 +119,7 @@ sub get_records {
             } elsif ($qtype eq 'SOA') {
                 $rr->mname($rr->owner) unless $rr->mname;
                 $rr->rname('hostmaster.'.$rr->owner) unless $rr->rname;
-                $rr->serial($self->{mtime}) unless $rr->serial;
+                $rr->serial($mtime) unless $rr->serial;
                 $rr->refresh(24*60*60) unless $rr->refresh;
                 $rr->retry(60*60) unless $rr->retry;
                 $rr->expire(365*24*60*60) unless $rr->expire;

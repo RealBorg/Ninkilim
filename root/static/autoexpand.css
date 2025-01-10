@@ -3,15 +3,7 @@ div.body {
     overflow: hidden;
     transition: max-height 1s;
 }
-div.body:hover {
+div.enlarged {
     max-height: none;
     transition: max-height 1s;
-}
-img.media {
-    max-height: 4em;
-    transition: width 1s, max-height 1s;
-}
-img.media:hover {
-    max-height: none;
-    width: 100%;
 }

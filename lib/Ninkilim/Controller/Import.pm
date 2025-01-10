@@ -1,5 +1,6 @@
 package Ninkilim::Controller::Import;
 use DateTime::Format::Strptime;
+use Digest::SHA;
 use Moose;
 use namespace::autoclean;
 use File::Slurp;
@@ -37,9 +38,10 @@ sub index :Path :Args(0) {
     );
     if ($user) {
         $c->log->debug('Found user '.$account->{accountId});
+        my $email = Digest::SHA::sha512_base64($account->{email});
         $user->update(
             {
-                email => $account->{email},
+                email => $email,
                 username => $account->{username},
                 displayname => $account->{accountDisplayName},
                 bio => $profile->{description}->{bio},
@@ -49,10 +51,11 @@ sub index :Path :Args(0) {
         );
     } else {
         $c->log->debug('Created user '.$account->{accountId});
+        my $email = Digest::SHA::sha512_base64($account->{email});
         $user = $c->model('DB')->resultset('User')->create(
             {
                 id => $account->{accountId},
-                email => $account->{email},
+                email => $email,
                 username => $account->{username},
                 displayname => $account->{accountDisplayName},
                 bio => $profile->{description}->{bio},

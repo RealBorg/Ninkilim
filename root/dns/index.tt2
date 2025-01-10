@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
+<div class="posting">
+    <div class="body">
+        <table>
+        [% FOREACH name IN data.dns.keys.sort %]
+        <tr><td>[%= name %]</td><td colspan="3">&nbsp;</td></tr>
+            [% FOREACH class IN data.dns.$name.keys.sort %]
+                [% FOREACH type IN data.dns.$name.$class.keys.sort %]
+                    <tr><td>&nbsp;</td><td>[%= class %]</td><td>[%= type %]</td><td>&nbsp;</td></tr>
+                    [% FOREACH record IN data.dns.$name.$class.$type.sort %]
+                        <tr><td colspan=3>&nbsp;</td><td>[%= record %]</td></tr>
+                    [% END %]
+                [% END %]
+            [% END %]
+        [% END %]
+        </table>
+    </div>
+</div>
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>

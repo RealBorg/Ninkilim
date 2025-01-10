@@ -8,4 +8,5 @@
     <link rel="icon" type="image/png" sizes="128x128" href="[%= c.uri_for('/favicon/128.png') %]">
     <link rel="icon" type="image/png" sizes="256x256" href="[%= c.uri_for('/favicon/256.png') %]">
     <link rel="icon" type="image/png" sizes="512x512" href="[%= c.uri_for('/favicon/512.png') %]">
+    <link rel="me" href="https://freefree.ps/@Farid">
     <meta charset="utf-8">

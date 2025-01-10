@@ -3,9 +3,10 @@
         <a class="header_logo" href="[%= c.uri_for('/') %]"><img class="header_logo" src="[%= c.uri_for('/favicon/64.png') %]"></a>
     </div>
     <div class="header_middle">[%= title | html %]</div>
+    <!-- div class="header_middle" style="margin-left: auto; margin-right: auto">Farid Zehetbauer</div -->
     <div class="header_right">
         <form action="[%= c.uri_for('/search') %]" class="header_search">
-            <input class="header_search" name="q" value="[%= c.req.param('q') %]">
+            <input class="header_search" name="q" value="[%= c.req.param('q') %]"><br>
             <input class="header_search" type="submit" value="Search">
         </form>
     </div>
@@ -17,7 +18,8 @@
     </div>
     <div class="header2_right">
         [% IF c.user %]
-            <a href="[%= c.uri_for('/postings/create') %]">Create</a>
+            <a href="[%= c.uri_for('/postings/create') %]">Create</a> |
+            <a href="[%= c.uri_for('/sync') %]">Subscribe</a>
         [% ELSE %]
             <a href="[%= c.uri_for('/login') %]">Login</a>
         [% END %]

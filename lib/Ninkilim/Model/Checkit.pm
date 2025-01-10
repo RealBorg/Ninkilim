@@ -27,11 +27,6 @@ use constant {
             check_ssh => [],
             check_systat => [],
         },
-        'asus.hostmaster.org' => {
-            check_battery => [],
-            check_power => [],
-            check_systat => [],
-        },
         'fremont.hostmaster.org' => {
             check_dns => [ 'hostmaster.org' ],
             check_http => [],
@@ -70,25 +65,6 @@ use constant {
         },
     },
 };
-
-sub check_battery {
-    my ($self, $server) = @_;
-    my $result;
-
-    my $energy_full = read_file('/sys/class/power_supply/BAT0/energy_full', err_mode => 'quiet');
-    chomp $energy_full;
-    my $energy_now = read_file('/sys/class/power_supply/BAT0/energy_now', err_mode => 'quiet');
-    chomp $energy_now;
-    my $status = $energy_now / $energy_full;
-    if ($status > 0.75) {
-        $result = sprintf("OK: %i%%\n", $status * 100);
-    } elsif ($status > 0.25) {
-        $result = sprintf("WARNING: %i%%", $status * 100);
-    } else {
-        $result = sprintf("ERROR: %i%%", $status * 100);
-    }
-    return $result;
-}
 
 sub check_dns {
     my ($self, $server, $name) = @_;
@@ -159,7 +135,7 @@ sub check_ntp {
         $response = { Net::NTP::get_ntp_response($server) };
     };
     if ($response) {
-        $result = sprintf("OK: %s %.3f %i %s\n",
+        $result = sprintf("OK: %s %.3f %i %s",
             DateTime->from_epoch(epoch => $response->{'Destination Timestamp'})->iso8601,
             $response->{Offset},
             $response->{Stratum},
@@ -171,43 +147,32 @@ sub check_ntp {
     return $result;
 }
 
-sub check_power {
-    my ($self, $server) = @_;
-    my $result;
-
-    my $status = read_file('/sys/class/power_supply/AC0/online', err_mode => 'quiet');
-    chomp $status;
-    if ($status eq '1') {
-        $result = "OK: Online";
-    } else {
-        $result = "ERROR: Offline";
-    }
-    return $result;
-}
-
 sub check_smtp {
     my ($self, $server) = @_;
-    my $result;
+    my $result = '';
 
     my $sock = IO::Socket::IP->new(
-        Blocking => 0,
         PeerAddr => $server,
         PeerPort => 25,
         Proto    => 'tcp',
         Timeout  => 6,
     );
     if ($sock) {
-        my $banner;
         my $timeout = Time::HiRes::time + 6;
+        $sock->blocking(0);
         while (Time::HiRes::time < $timeout) {
             my $buf;
             $sock->read($buf, 1024);
-            $banner .= $buf if length($buf);
+            $result .= $buf if length($buf);
             Time::HiRes::sleep(0.1);
         }
-        chomp $banner;
-        $result = "OK: $banner";
         $sock->close;
+        chomp $result;
+        if ($result =~ /^220\s+/) {
+            $result = "OK: $result";
+        } else {
+            $result = "ERROR: $result";
+        }
     } else {
         $result = "ERROR: $!";
     }
@@ -219,16 +184,15 @@ sub check_ssh {
     my $result;
 
     my $sock = IO::Socket::IP->new(
-        Blocking => 0,
         PeerAddr => $server,
         PeerPort => 22,
         Proto    => 'tcp',
         Timeout  => 6,
     );
     if ($sock) {
-        $sock->blocking(0);
         my $banner;
         my $timeout = Time::HiRes::time + 6;
+        $sock->blocking(0);
         while (Time::HiRes::time < $timeout) {
             my $buf;
             $sock->read($buf, 1024);
@@ -246,36 +210,65 @@ sub check_ssh {
 
 sub check_systat {
     my ($self, $server) = @_;
-    my $result = '';
+    my $result;
+    my $error = 0;
+    my $warning = 0;
 
-    my $sock = IO::Socket::IP->new(
-        PeerAddr => $server,
-        PeerPort => 11,
-        Proto    => 'tcp',
-    );
-    if ($sock) {
-        $sock->blocking(0);
-        my $timeout = Time::HiRes::time + 6;
-        while (Time::HiRes::time < $timeout) {
-            my $buf;
-            $sock->sysread($buf, 1024);
-            $result .= $buf if length($buf);
-            Time::HiRes::sleep 0.1;
-        }
-        $sock->close;
-        if ($result =~ /^(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)/) {
-            if ($1 > 8 || $2 > 4 || $3 > 2) {
-                $result = "ERROR: $result";
-            } elsif ($1 > 4 || $2 > 2 || $3 > 1) {
-                $result = "WARNING: $result";
-            } else {
-                $result = "OK: $result";
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout(6);
+    my $res = $ua->get("http://$server/status?format=json");
+    if ($res->is_success) {
+        $res = $res->decoded_content;
+        $res = JSON::decode_json($res);
+        $res = $res->{'status'};
+        if ($res->{memory}) {
+            push @{$result}, sprintf("m: %.2f", $res->{memory});
+            if ($res->{memory} > 31/32) {
+                $error = 1;
+            } elsif ($res->{memory} > 15/16) {
+                $warning = 1;
             }
-        } else {
+        }
+        if ($res->{swap}) {
+            push @{$result}, sprintf("s: %.2f", $res->{swap});
+        }
+        if ($res->{ac}) {
+            if ($res->{ac} == 1) {
+                push @{$result}, 'AC';
+            } else {
+                push @{$result}, 'BA';
+                $warning = 1;
+            }
+        }
+        if ($res->{battery}) {
+            push @{$result}, sprintf("b: %.2f", $res->{battery});
+            if ($res->{battery} < 3/4) {
+                $warning = 1;
+            } elsif ($res->{battery} < 1/4) {
+                $error = 1;
+            }
+        }
+        if (defined($res->{load1}) && defined($res->{load5}) && defined($res->{load15})) {
+            push @{$result}, sprintf("l: %s %s %s", $res->{load1}, $res->{load5}, $res->{load15});
+            if ($res->{load1} > 4 || $res->{load5} > 2 || $res->{load15} > 1) {
+                $error = 1;
+            } elsif ($res->{load1} > 2 || $res->{load5} > 1 || $res->{load15} > 0.5) {
+                $warning = 1;
+            }
+        }
+        if ($res->{uptime}) {
+            push @{$result}, sprintf("u: %s", $res->{uptime});
+        }
+        $result = join(' ', @{$result});
+        if ($error) {
             $result = "ERROR: $result";
+        } elsif ($warning) {
+            $result = "WARNING: $result";
+        } else {
+            $result = "OK: $result";
         }
     } else {
-        $result = "ERROR: $!";
+        $result = sprintf("ERROR: %s", $res->status_line);
     }
     return $result;
 }
@@ -295,21 +288,22 @@ sub run_checks {
     my $result;
     for my $server (sort(keys(%{$self->CHECKS}))) {
         for my $check (sort(keys(%{$self->CHECKS()->{$server}}))) {
-            Ninkilim->log->debug("$server $check");
+            STDOUT->printf(
+                "%s %s\n",
+                $server,
+                $check,
+            );
             my @args = @{$self->CHECKS()->{$server}->{$check}};
             $result->{$server}->{$check}->{result} = $self->$check($server, @args);
             $result->{$server}->{$check}->{date} = POSIX::strftime("%Y-%m-%dT%H:%M:%S", gmtime(time));
-            Ninkilim->log->debug($result->{$server}->{$check}->{date}.' '.$result->{$server}->{$check}->{result});
+            STDOUT->printf(
+                "%s %s\n",
+                $result->{$server}->{$check}->{date},
+                $result->{$server}->{$check}->{result},
+            );
         }
     }
-    $self->write_results($result);
-}
-
-sub write_results {
-    my ($self, $results) = @_;
-
-    $results = JSON::encode_json($results);
-    File::Slurp::write_file(Ninkilim->path_to(qw/root checkit.json/), $results);
+    return $result;
 }
 
 __PACKAGE__->meta->make_immutable;

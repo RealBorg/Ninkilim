@@ -157,7 +157,6 @@ sub finish :Private {
         }
         my $author = $posting->author;
         $author = { $author->get_columns };
-        delete $author->{email};
         $posting = {
             $posting->get_columns,
             id => ''.$posting->id,

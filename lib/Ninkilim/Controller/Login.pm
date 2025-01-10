@@ -1,5 +1,6 @@
 package Ninkilim::Controller::Login;
 use DateTime;
+use Digest::SHA;
 use Moose;
 use namespace::autoclean;
 use Sys::Hostname;
@@ -19,7 +20,8 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
     if (my $email = $c->req->param('email')) {
-        if (my $user = $c->model('DB')->resultset('User')->find({ email => $email })) {
+        my $email_hash = Digest::SHA::sha512_base64($email);
+        if (my $user = $c->model('DB')->resultset('User')->find({ email => $email_hash })) {
             my $token;
             for (my $i = 0; $i < 32; $i++) {
                 $token .= CHARSET->[int(rand(scalar(@{CHARSET()})))];
@@ -35,7 +37,7 @@ sub index :Path :Args(0) {
             $uri->host(hostname());
             $uri = $uri->as_string;
             my $email = Ninkilim::Email->new(
-                To => $user->email,
+                To => $email,
                 Subject => $c->uri_for('/'),
                 Type => 'text/plain',
                 Data => $uri,

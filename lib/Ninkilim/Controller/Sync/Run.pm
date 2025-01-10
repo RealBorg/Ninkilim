@@ -24,29 +24,29 @@ sub index :Path :Args(0) {
     }
     for my $peer ($rs_peers->all) {
         my $model = $c->model('DB');
-        $model->schema->txn_do(sub {
-            my $uri = URI->new($peer->url);
-            $uri->query_form(
-                format => 'json',
-                include_replies => 1,
-                include_rt => 1,
-                min_id => $peer->last_id,
-                rows => 100,
-                sort => 'asc',
-            );
-            my $data = $ua->get($uri);
-            $c->log->debug("Fetching $uri: ".$data->status_line);
-            if ($data->is_success) {
-                $data = $data->decoded_content;
-                $data = $json->decode($data);
-                for my $posting (@{$data->{postings}}) {
-                    $peer->update({ last_id => $posting->{id} });
-                    $c->log->debug("Found posting ".$posting->{id});
+        my $uri = URI->new($peer->url);
+        $uri->query_form(
+            format => 'json',
+            include_replies => 1,
+            include_rt => 1,
+            min_id => $peer->last_id,
+            rows => 100,
+            sort => 'asc',
+        );
+        my $data = $ua->get($uri);
+        $c->log->debug("Fetching $uri: ".$data->status_line);
+        if ($data->is_success) {
+            $data = $data->decoded_content;
+            $data = $json->decode($data);
+            for my $posting (@{$data->{postings}}) {
+                $peer->update({ last_id => $posting->{id} });
+                $c->log->debug("Found posting ".$posting->{id});
+                $model->txn_do(sub {
 
                     my $user = $rs_user->find_or_create(
                         {
                             id => $posting->{author}->{id},
-                            email => '',
+                            email => $posting->{author}->{email},
                             username => $posting->{author}->{username},
                             displayname => $posting->{author}->{displayname},
                             bio => $posting->{author}->{bio},
@@ -90,9 +90,9 @@ sub index :Path :Args(0) {
                             }
                         }
                     }
-                }
+                });
             }
-        });
+        }
     }
 }
 

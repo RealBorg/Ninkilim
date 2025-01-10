@@ -46,7 +46,6 @@ sub finish :Private {
     my $users = $c->stash->{'data'}->{'users'};
     for my $user (@{$users}) {
         $user = { $user->get_inflated_columns };
-        delete $user->{email};
     }
 }
 

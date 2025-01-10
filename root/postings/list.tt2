@@ -4,12 +4,12 @@
             <div class="author"><a href="[%= c.uri_for('/users', posting.author.username) %]">[%= posting.author.displayname %]</a></div>
             <div class="date"><a href="[%= c.uri_for('/postings', posting.id) %]">[%= posting.date %]</a></div>
         </div>
-        <div class="body" lang="[%= posting.lang %]">[%= markdown(posting.text) %]</div>
+        <div class="body" lang="[%= posting.lang %]" onClick="this.classList.toggle('enlarged');">[%= markdown(posting.text) %]</div>
         [% IF posting.medias.size %]
             <div class="media">
             [% FOREACH media IN posting.medias %]
                 [% IF media.type == "image" %]
-                    <img class="media" src="[%= media.url %]">
+                    <img class="media" src="[%= media.url %]" onClick="this.classList.toggle('enlarged');">
                 [% ELSIF media.type == "video" %]
                     <video class="media" src="[%= media.url %]" controls>
                 [% END %]

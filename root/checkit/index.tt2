@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+[% PROCESS 'html_head.tt2' %]
+</head>
+<body>
+[% PROCESS 'html_body_top.tt2' %]
+<div class="posting">
+    <div class="body">
+        <table>
+        [% FOREACH server IN data.keys.sort %]
+            <tr><td>[%= server %]</td><td colspan="3">&nbsp;</td></tr>
+            [% FOREACH check IN data.$server.keys.sort %]
+            [% SET bgcolor = '#AAFFAA' %]
+            [% IF data.$server.$check.result.match('^WARNING') %][% SET bgcolor = '#FFFFAA' %][% END %]
+            [% IF data.$server.$check.result.match('^ERROR') %][% SET bgcolor = '#FFAAAA' %][% END %]
+            <tr><td>&nbsp;</td><td>[%= check %]</td><td>[%= data.$server.$check.date %]</td><td style="background-color: [%= bgcolor %]">[%= data.$server.$check.result %]</td></tr>
+            [% END %]
+        [% END %]
+        </table>
+    </div>
+</div>
+[% PROCESS 'html_body_bottom.tt2' %]
+</body>
+</html>
