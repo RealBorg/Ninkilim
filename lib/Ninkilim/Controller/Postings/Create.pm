@@ -2,7 +2,6 @@ package Ninkilim::Controller::Postings::Create;
 use Moose;
 use namespace::autoclean;
 use DateTime;
-use Lingua::Identify qw/langof/;
 use Time::HiRes;
 use Data::Dumper;
 
@@ -24,6 +23,7 @@ sub index :Path :Args(0) {
 
     my $posting = $c->session->{'drafts'}->{$draft_id};
     $posting->{'id'} = $draft_id;
+    $posting->{'lang'} = $c->req->param('lang') || 'en';
     $posting->{'date'} = DateTime->now()->iso8601();
     $posting->{'text'} = $c->req->param('text') || '';
     $posting->{'parent'} = undef;
@@ -35,8 +35,6 @@ sub index :Path :Args(0) {
             $id += $draft_id;
             $posting->{'id'} = $id;
 
-            $posting->{'lang'} = langof($posting->{'text'});
-            
             for my $media (@{$posting->{medias}}) {
                 my $filename = sprintf("%s-%s", $posting->{id}, $media->{'filename'});
                 rename $c->path_to('root', 'static', 'media', $media->{'filename'}), 

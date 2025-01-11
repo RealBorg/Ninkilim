@@ -146,12 +146,18 @@ div.date {
 div.body {
 }
 div.media {
-    /* display: flex; */
+    display: flex;
     flex-wrap: wrap;
     width: 100%;
 }
+div.create_posting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
 img.media {
-    /* transition: max-height 1s, width 1s; */
+    transition: height 1s, width 1s;
     max-height: 4em;
     max-width: 25%;
 }

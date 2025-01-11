@@ -43,17 +43,38 @@ sub index :Path :Args(0) {
                 $c->log->debug("Found posting ".$posting->{id});
                 $model->txn_do(sub {
 
-                    my $user = $rs_user->find_or_create(
+                    my $user = $rs_user->find(
                         {
                             id => $posting->{author}->{id},
-                            email => $posting->{author}->{email},
-                            username => $posting->{author}->{username},
-                            displayname => $posting->{author}->{displayname},
-                            bio => $posting->{author}->{bio},
-                            website => $posting->{author}->{website},
-                            location => $posting->{author}->{location},
                         }
                     );
+                    if ($user) {
+                        if ($uri->host eq $user->source) {
+                            $user->update(
+                                {
+                                    email => $posting->{author}->{email},
+                                    username => $posting->{author}->{username},
+                                    displayname => $posting->{author}->{displayname},
+                                    bio => $posting->{author}->{bio},
+                                    website => $posting->{author}->{website},
+                                    location => $posting->{author}->{location},
+                                }
+                            );
+                        }
+                    } else {
+                        $user = $rs_user->create(
+                            {
+                                id => $posting->{author}->{id},
+                                email => $posting->{author}->{email},
+                                username => $posting->{author}->{username},
+                                displayname => $posting->{author}->{displayname},
+                                bio => $posting->{author}->{bio},
+                                website => $posting->{author}->{website},
+                                location => $posting->{author}->{location},
+                                source => $uri->host,
+                            }
+                        );
+                    }
                     my $posting_db = $user->find_or_create_related('postings',
                         {
                             id => $posting->{id},

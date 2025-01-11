@@ -73,6 +73,12 @@ __PACKAGE__->table("users");
   data_type: 'text'
   is_nullable: 0
 
+=head2 source
+
+  data_type: 'text'
+  default_value: (empty string)
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -90,6 +96,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "location",
   { data_type => "text", is_nullable => 0 },
+  "source",
+  { data_type => "text", default_value => "", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -152,8 +160,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07051 @ 2024-12-19 08:58:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9JnkXLBD0MVWutObhEAkbA
+# Created by DBIx::Class::Schema::Loader v0.07051 @ 2025-01-10 10:53:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wjeXFNF/MDKcN6m2xhdWsw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

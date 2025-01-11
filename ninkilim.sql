@@ -3,9 +3,10 @@ CREATE TABLE users (
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     displayname TEXT NOT NULL,
-    bio TEXT NOT NULL,
-    website TEXT NOT NULL,
-    location TEXT NOT NULL
+    bio TEXT NOT NULL DEFAULT '',
+    website TEXT NOT NULL DEFAULT '',
+    location TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE postings (
     id BIGINT PRIMARY KEY,
