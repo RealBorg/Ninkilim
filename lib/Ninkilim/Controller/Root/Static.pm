@@ -51,9 +51,10 @@ sub index :Path :Args {
     my $files = $self->find_files($c->path_to('root', 'static'));
     my $host = $c->req->header('Host');
     $host =~ s/:\d+$//;
+    $c->res->status(404);
     for my $path ($c->path_to('root', 'static', $host, $c->req->path), $c->path_to('root', 'static', $c->req->path)) {
-        warn $path;
         if (my $file = $files->{$path}) {
+            $c->res->status(200);
             my $ifmodified = $c->req->header('If-Modified');
             $ifmodified = HTTP::Date::str2time($ifmodified) if $ifmodified;
             if ($ifmodified && $ifmodified == $file->{mtime}) {
@@ -78,7 +79,7 @@ sub index :Path :Args {
             last;
         }
     }
-    unless ($c->res->body) {
+    if ($c->res->status == 404) {
         $c->detach('/notfound');
     }
 }
