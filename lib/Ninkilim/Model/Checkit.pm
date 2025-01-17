@@ -90,11 +90,12 @@ sub check_http {
     my $result;
 
     my $ua = LWP::UserAgent->new(timeout => 6);
+    my $time = Time::HiRes::time;
     my $res = $ua->get("http://$server/");
     if ($res->is_success) {
-        $result = "OK: ".$res->status_line;
+        $result = sprintf("OK: %s, %.3fs", $res->status_line, Time::HiRes::time - $time);
     } else {
-        $result = "ERROR: ".$res->status_line;
+        $result = sprintf("ERROR: %s, %.3fs", $res->status_line, Time::HiRes::time - $time);
     }
     return $result;
 }
@@ -294,7 +295,12 @@ sub run_checks {
                 $check,
             );
             my @args = @{$self->CHECKS()->{$server}->{$check}};
-            $result->{$server}->{$check}->{result} = $self->$check($server, @args);
+            eval {
+                $result->{$server}->{$check}->{result} = $self->$check($server, @args);
+            };
+            if ($@) {
+                $result->{$server}->{$check}->{result} = "ERROT: $@";
+            }
             $result->{$server}->{$check}->{date} = POSIX::strftime("%Y-%m-%dT%H:%M:%S", gmtime(time));
             STDOUT->printf(
                 "%s %s\n",

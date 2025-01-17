@@ -6,13 +6,18 @@ use YAML::XS;
 
 extends 'Catalyst::View';
 
+use strict;
+use warnings;
+use bytes;
+
 sub process {
     my ($self, $c) = @_;
 
     my $data = $c->stash->{'data'};
     $data = Dump($data);
     $data = decode('utf8', $data);
-    $c->response->content_type('text/yaml; charset=UTF-8');
+    $c->res->header('Content-Type', 'text/yaml');
+    $c->res->header('Content-Length', length($data));
     $c->res->body($data);
 
     return 1;

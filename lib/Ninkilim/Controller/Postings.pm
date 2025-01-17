@@ -19,7 +19,7 @@ sub begin :Private {
     $c->stash->{'page'}->{'previous'} = $page - 1 if $page > 1;
 
     my $rows = abs(int($c->req->param('rows') || '10'));
-    $rows = 10 if $rows > 100;
+    $rows = 10 if $rows > 1000;
 
     my $order_by = { -desc => 'date' };
     if (($c->req->param('sort') || 'desc') eq 'asc') {

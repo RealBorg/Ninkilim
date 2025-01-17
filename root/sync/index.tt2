@@ -32,7 +32,7 @@
 [% PROCESS 'html_body_top.tt2' %]
 <div class="peer-container posting">
 [% IF c.user.id %]
-    <form method="POST">
+    <form method="POST" class="peer-form">
         <input type="text" name="url" class="peer-url">
         <input type="text" name="owner" value="[%= c.user.id %]" readonly class="peer-owner">
         <input type="text" name="last_id" value="0" class="peer-last-id">
@@ -45,10 +45,8 @@
         <input type="text" name="newurl" value="[%= peer.url %]" class="peer-url">
         <input type="text" id="owner1" name="owner" value="[%= peer.owner %]" readonly class="peer-owner">
         <input type="text" id="last_id1" name="last_id" value="[%= peer.last_id %]" class="peer-last-id">
-        [% IF peer.owner == c.user.id %]
-        <input type="submit" name="update" value="Update" class="peer-button">
-        <input type="submit" name="delete" value="Delete" class="peer-button">
-        [% END %]
+        <input type="submit" name="update" value="Update" class="peer-button" [% UNLESS c.user && peer.owner == c.user.id %]disabled[% END %]>
+        <input type="submit" name="delete" value="Delete" class="peer-button" [% UNLESS c.user && peer.owner == c.user.id %]disabled[% END %]>
     </form>
 [% END %]
 </div>

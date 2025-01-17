@@ -48,33 +48,37 @@ sub find_files {
 sub index :Path :Args {
     my ( $self, $c, @args ) = @_;
 
-    my $rootstatic = $c->path_to(qw/root static/);
-    my $files = $self->find_files($rootstatic);
-
-    my $path = $rootstatic.'/'.$c->req->path();
-    if (my $file = $files->{$path}) {
-        my $ifmodified = $c->req->header('If-Modified');
-        $ifmodified = HTTP::Date::str2time($ifmodified) if $ifmodified;
-        if ($ifmodified && $ifmodified == $file->{mtime}) {
-            $c->detach('/notmodified');
-        } else {
-            if (my $mime_type = $mime_types->mimeTypeOf($path)) {
-                $c->res->header('Content-Type' => $mime_type->type);
-            }
-            $c->res->header('Content-Length' => $file->{size});
-            $c->res->header('Last-Modified' => HTTP::Date::time2str($file->{mtime}));
-            if ($c->req->method eq 'HEAD') {
-                $c->stash->{'format'} = 'none';
-            } elsif ($c->req->method eq 'GET') {
-                $c->stash->{'format'} = 'none';
-                my $fh = IO::File->new($path, 'r');
-                binmode $fh;
-                $c->res->body($fh);
+    my $files = $self->find_files($c->path_to('root', 'static'));
+    my $host = $c->req->header('Host');
+    $host =~ s/:\d+$//;
+    for my $path ($c->path_to('root', 'static', $host, $c->req->path), $c->path_to('root', 'static', $c->req->path)) {
+        warn $path;
+        if (my $file = $files->{$path}) {
+            my $ifmodified = $c->req->header('If-Modified');
+            $ifmodified = HTTP::Date::str2time($ifmodified) if $ifmodified;
+            if ($ifmodified && $ifmodified == $file->{mtime}) {
+                $c->detach('/notmodified');
             } else {
-                $c->detach('/methodnotfound');
+                if (my $mime_type = $mime_types->mimeTypeOf($path)) {
+                    $c->res->header('Content-Type' => $mime_type->type);
+                }
+                $c->res->header('Content-Length' => $file->{size});
+                $c->res->header('Last-Modified' => HTTP::Date::time2str($file->{mtime}));
+                if ($c->req->method eq 'HEAD') {
+                    $c->stash->{'format'} = 'none';
+                } elsif ($c->req->method eq 'GET') {
+                    $c->stash->{'format'} = 'none';
+                    my $fh = IO::File->new($path, 'r');
+                    binmode $fh;
+                    $c->res->body($fh);
+                } else {
+                    $c->detach('/methodnotfound');
+                }
             }
+            last;
         }
-    } else {
+    }
+    unless ($c->res->body) {
         $c->detach('/notfound');
     }
 }

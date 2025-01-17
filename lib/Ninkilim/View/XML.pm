@@ -7,6 +7,7 @@ extends 'Catalyst::View';
 
 use strict;
 use warnings;
+use bytes;
 
 sub process {
     my ($self, $c) = @_;
@@ -21,7 +22,8 @@ sub process {
     }
     my $data = $c->stash->{'data'};
     $data = XMLout($data, %{$xmlopts});
-    $c->response->content_type('application/xml');
+    $c->res->header('Content-Type', 'application/xml');
+    $c->res->header('Content-Length', length($data));
     $c->response->body($data);
 
     return 1;

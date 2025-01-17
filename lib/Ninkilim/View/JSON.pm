@@ -7,6 +7,7 @@ extends 'Catalyst::View';
 
 use strict;
 use warnings;
+use bytes;
 
 sub process {
     my ($self, $c) = @_;
@@ -14,7 +15,8 @@ sub process {
     my $data = $c->stash->{'data'};
     my $json = JSON->new;
     $data = $json->encode($data);
-    $c->response->content_type('text/json');
+    $c->res->header('Content-Type', 'text/json');
+    $c->res->header('Content-Length', length($data));
     $c->res->body($data);
 
     return 1;
